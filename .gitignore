@@ -1,0 +1,36 @@
+# Dependencies (downloaded by setup.bat)
+bin/node/
+bin/openclaw/
+
+# Runtime data (generated at runtime)
+data/state/
+data/browser/
+data/npm/
+data/tmp/
+data/logs/
+data/plugin-runtime-deps/
+
+# Runtime state
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+data/tasks/runs.sqlite*
+
+# Backups
+data/backups/
+*.bak
+
+# Secrets — use *.example templates, copy and fill in your keys
+data/openclaw.json
+data/providers.json
+data/agents/*/agent/models.json
+data/agents/*/agent/auth-profiles.json
+data/agents/*/agent/auth-state.json
+data/exec-approvals.json
+data/identity/
+data/devices/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

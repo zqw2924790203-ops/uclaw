@@ -1,0 +1,231 @@
+{
+  "providers": {
+    "minimax-portal": {
+      "baseUrl": "https://api.minimaxi.com/anthropic/v1",
+      "api": "anthropic-messages",
+      "authHeader": true,
+      "models": [
+        {
+          "id": "MiniMax-M2.7",
+          "name": "MiniMax-M2.7",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 200000,
+          "maxTokens": 8192,
+          "api": "anthropic-messages"
+        }
+      ],
+      "apiKey": "YOUR_API_KEY_HERE"
+    },
+    "minimax": {
+      "baseUrl": "https://api.minimaxi.com/anthropic",
+      "api": "anthropic-messages",
+      "models": [
+        {
+          "id": "MiniMax-M2.7",
+          "name": "MiniMax M2.7"
+        }
+      ],
+      "apiKey": "YOUR_API_KEY_HERE"
+    },
+    "openai-codex": {
+      "baseUrl": "https://chatgpt.com/backend-api",
+      "api": "openai-codex-responses",
+      "models": []
+    },
+    "custom-customad": {
+      "baseUrl": "https://api.deepseek.com/v1",
+      "api": "openai-completions",
+      "models": [
+        {
+          "id": "deepseek-v4-pro",
+          "name": "deepseek-v4-pro",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 200000,
+          "maxTokens": 8192,
+          "api": "openai-completions"
+        }
+      ],
+      "apiKey": "YOUR_API_KEY_HERE"
+    },
+    "custom-customd8": {
+      "baseUrl": "https://endpoint.greatrouter.com/v1",
+      "api": "openai-completions",
+      "models": [
+        {
+          "id": "gpt-5.4-pro",
+          "name": "gpt-5.4-pro",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 200000,
+          "maxTokens": 8192,
+          "api": "openai-completions"
+        }
+      ],
+      "apiKey": "YOUR_API_KEY_HERE"
+    },
+    "custom-customa4": {
+      "baseUrl": "https://integrate.api.nvidia.com/v1",
+      "api": "openai-completions",
+      "models": [
+        {
+          "id": "deepseek-ai/deepseek-v4-pro",
+          "name": "deepseek-ai/deepseek-v4-pro",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 200000,
+          "maxTokens": 8192,
+          "api": "openai-completions"
+        }
+      ],
+      "apiKey": "YOUR_API_KEY_HERE"
+    },
+    "codex": {
+      "baseUrl": "https://chatgpt.com/backend-api/v1",
+      "apiKey": "YOUR_API_KEY_HERE",
+      "auth": "token",
+      "api": "openai-codex-responses",
+      "models": [
+        {
+          "id": "gpt-5.4",
+          "name": "gpt-5.4",
+          "api": "openai-codex-responses",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 272000,
+          "maxTokens": 128000,
+          "compat": {
+            "supportsReasoningEffort": true,
+            "supportsUsageInStreaming": true
+          }
+        },
+        {
+          "id": "gpt-5.4-mini",
+          "name": "GPT-5.4-Mini",
+          "api": "openai-codex-responses",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 272000,
+          "maxTokens": 128000,
+          "compat": {
+            "supportsReasoningEffort": true,
+            "supportsUsageInStreaming": true
+          }
+        },
+        {
+          "id": "gpt-5.2",
+          "name": "gpt-5.2",
+          "api": "openai-codex-responses",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 272000,
+          "maxTokens": 128000,
+          "compat": {
+            "supportsReasoningEffort": true,
+            "supportsUsageInStreaming": true
+          }
+        }
+      ]
+    },
+    "minimax-portal-cn": {
+      "baseUrl": "https://api.minimaxi.com/anthropic/v1",
+      "api": "anthropic-messages",
+      "authHeader": true,
+      "models": [
+        {
+          "id": "MiniMax-M2.7",
+          "name": "MiniMax-M2.7",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 200000,
+          "maxTokens": 8192,
+          "api": "anthropic-messages"
+        }
+      ],
+      "apiKey": "YOUR_API_KEY_HERE"
+    },
+    "deepseek": {
+      "baseUrl": "https://api.deepseek.com",
+      "api": "openai-completions",
+      "models": [
+        {
+          "id": "deepseek-v4-pro",
+          "name": "DeepSeek V4 Pro"
+        },
+        {
+          "id": "deepseek-v4-flash",
+          "name": "DeepSeek V4 Flash"
+        }
+      ],
+      "apiKey": "YOUR_API_KEY_HERE"
+    }
+  }
+}

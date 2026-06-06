@@ -1,0 +1,332 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.6.1",
+    "lastTouchedAt": "2026-06-06T08:05:00.000Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-04-01T10:32:25.213Z",
+    "lastRunVersion": "2026.3.24",
+    "lastRunCommand": "doctor",
+    "lastRunMode": "local"
+  },
+  "browser": {
+    "enabled": true,
+    "defaultProfile": "openclaw",
+    "ssrfPolicy": {
+      "dangerouslyAllowPrivateNetwork": true
+    }
+  },
+  "auth": {
+    "profiles": {}
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "minimax-portal": {
+        "baseUrl": "https://api.minimaxi.com/anthropic",
+        "apiKey": "YOUR_API_KEY_HERE",
+        "api": "anthropic-messages",
+        "models": [
+          {
+            "id": "MiniMax-M2.7",
+            "name": "MiniMax-M2.7"
+          }
+        ]
+      },
+      "custom-customad": {
+        "baseUrl": "https://api.deepseek.com",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "deepseek-v4-pro",
+            "name": "deepseek-v4-pro"
+          }
+        ],
+        "apiKey": "YOUR_API_KEY_HERE"
+      },
+      "custom-customa4": {
+        "baseUrl": "https://integrate.api.nvidia.com/v1",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "deepseek-ai/deepseek-v4-pro",
+            "name": "deepseek-ai/deepseek-v4-pro"
+          }
+        ]
+      },
+      "custom-customd8": {
+        "baseUrl": "https://endpoint.greatrouter.com/v1",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "gpt-5.4-pro",
+            "name": "gpt-5.4-pro"
+          }
+        ]
+      },
+      "codex": {
+        "baseUrl": "https://chatgpt.com/backend-api/v1",
+        "apiKey": "YOUR_API_KEY_HERE",
+        "auth": "token",
+        "api": "openai-chatgpt-responses",
+        "models": [
+          {
+            "id": "gpt-5.4",
+            "name": "gpt-5.4"
+          },
+          {
+            "id": "gpt-5.4-mini",
+            "name": "GPT-5.4-Mini"
+          },
+          {
+            "id": "gpt-5.2",
+            "name": "gpt-5.2"
+          }
+        ]
+      },
+      "minimax": {
+        "baseUrl": "https://api.minimaxi.com/anthropic",
+        "api": "anthropic-messages",
+        "models": [
+          {
+            "id": "MiniMax-M2.7",
+            "name": "MiniMax M2.7"
+          }
+        ],
+        "apiKey": "YOUR_API_KEY_HERE"
+      },
+      "deepseek": {
+        "baseUrl": "https://api.deepseek.com",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "deepseek-v4-pro",
+            "name": "DeepSeek V4 Pro"
+          },
+          {
+            "id": "deepseek-v4-flash",
+            "name": "DeepSeek V4 Flash"
+          }
+        ],
+        "apiKey": "YOUR_API_KEY_HERE"
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "deepseek/deepseek-v4-pro",
+        "fallbacks": []
+      },
+      "models": {
+        "minimax/MiniMax-M2.7": {
+          "alias": "Minimax"
+        }
+      },
+      "workspace": "~/.openclaw/workspace",
+      "memorySearch": {
+        "enabled": false
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "name": "Main Agent",
+        "workspace": "~/.openclaw/workspace",
+        "agentDir": "~/.openclaw/agents/main/agent"
+      },
+      {
+        "id": "agent",
+        "name": "抖音策略师",
+        "workspace": "~/.openclaw/workspace-agent",
+        "agentDir": "~/.openclaw/agents/agent/agent"
+      },
+      {
+        "id": "agent-2",
+        "name": "网络高手",
+        "workspace": "~/.openclaw/workspace-agent-2",
+        "agentDir": "~/.openclaw/agents/agent-2/agent"
+      }
+    ]
+  },
+  "tools": {
+    "profile": "full",
+    "sessions": {
+      "visibility": "all"
+    },
+    "exec": {
+      "security": "full",
+      "ask": "off"
+    }
+  },
+  "bindings": [
+    {
+      "agentId": "main",
+      "match": {
+        "channel": "openclaw-weixin",
+        "accountId": "0aec9dc831ba-im-bot"
+      }
+    }
+  ],
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "session": {
+    "dmScope": "per-channel-peer",
+    "idleMinutes": 10080
+  },
+  "channels": {
+    "openclaw-weixin": {
+      "accounts": {
+        "0aec9dc831ba-im-bot": {
+          "enabled": true
+        }
+      },
+      "defaultAccount": "0aec9dc831ba-im-bot",
+      "enabled": true
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "controlUi": {
+      "allowedOrigins": [
+        "file://"
+      ],
+      "allowInsecureAuth": false
+    },
+    "auth": {
+      "mode": "none"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    }
+  },
+  "skills": {
+    "entries": {
+      "pdf": {
+        "enabled": true
+      },
+      "xlsx": {
+        "enabled": true
+      },
+      "docx": {
+        "enabled": true
+      },
+      "pptx": {
+        "enabled": true
+      },
+      "find-skills": {
+        "enabled": true
+      },
+      "self-improving-agent": {
+        "enabled": true
+      },
+      "tavily-search": {
+        "enabled": true
+      },
+      "brave-web-search": {
+        "enabled": true
+      },
+      "openclaw-skill-vetter": {
+        "enabled": true
+      },
+      "skill-vetter": {
+        "enabled": true
+      },
+      "xiucheng-self-improving-agent": {
+        "enabled": true
+      },
+      "capability-evolver-pro": {
+        "enabled": true
+      },
+      "firecrawl-search": {
+        "enabled": true
+      },
+      "playwright-scraper-skill": {
+        "enabled": true
+      },
+      "zhang-qiwang": {
+        "enabled": true
+      }
+    }
+  },
+  "plugins": {
+    "enabled": true,
+    "allow": [
+      "openclaw-weixin",
+      "alibaba",
+      "anthropic",
+      "arcee",
+      "browser",
+      "byteplus",
+      "chutes",
+      "cloudflare-ai-gateway",
+      "comfy",
+      "copilot-proxy",
+      "deepgram",
+      "deepseek",
+      "device-pair",
+      "elevenlabs",
+      "fal",
+      "fireworks",
+      "github-copilot",
+      "google",
+      "groq",
+      "huggingface",
+      "kilocode",
+      "kimi",
+      "litellm",
+      "lmstudio",
+      "microsoft",
+      "microsoft-foundry",
+      "minimax",
+      "mistral",
+      "moonshot",
+      "nvidia",
+      "ollama",
+      "openai",
+      "opencode",
+      "opencode-go",
+      "openrouter",
+      "phone-control",
+      "qianfan",
+      "qwen",
+      "runway",
+      "sglang",
+      "stepfun",
+      "synthetic",
+      "talk-voice",
+      "together",
+      "venice",
+      "vercel-ai-gateway",
+      "vllm",
+      "volcengine",
+      "vydra",
+      "xai",
+      "xiaomi",
+      "zai",
+      "memory-core"
+    ],
+    "entries": {
+      "minimax": {
+        "enabled": true,
+        "config": {}
+      },
+      "openclaw-weixin": {
+        "enabled": true,
+        "config": {}
+      },
+      "browser": {
+        "enabled": true
+      }
+    },
+    "bundledDiscovery": "compat"
+  }
+}

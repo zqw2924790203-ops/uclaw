@@ -1,0 +1,11 @@
+{
+  "name": "DeepSeek v4 Pro",
+  "description": "Free, fast Chinese LLM via DeepSeek API",
+  "provider": "custom-customad",
+  "model": "deepseek-v4-pro",
+  "fullId": "custom-customad/deepseek-v4-pro",
+  "api": "openai-completions",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "features": ["text", "fast", "free"],
+  "default": true
+}

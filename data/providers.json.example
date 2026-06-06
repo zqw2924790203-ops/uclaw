@@ -1,0 +1,164 @@
+[
+  {
+    "id": "deepseek",
+    "name": "DeepSeek",
+    "nameZh": "DeepSeek v4 Pro",
+    "category": "cn_official",
+    "icon": "deepseek",
+    "iconColor": "#1E88E5",
+    "baseUrl": "https://api.deepseek.com",
+    "api": "openai-completions",
+    "apiKey": "",
+    "models": [
+      {
+        "id": "deepseek-v4-pro",
+        "name": "DeepSeek V4 Pro",
+        "tags": [
+          "免费",
+          "快速"
+        ]
+      },
+      {
+        "id": "deepseek-v4-flash",
+        "name": "DeepSeek V4 Flash",
+        "tags": [
+          "免费",
+          "极速"
+        ]
+      }
+    ],
+    "isCurrent": true,
+    "costMultiplier": "1.0",
+    "notes": "默认推荐，免费快速"
+  },
+  {
+    "id": "minimax",
+    "name": "MiniMax",
+    "nameZh": "MiniMax M2.7",
+    "category": "cn_official",
+    "icon": "minimax",
+    "iconColor": "#6C5CE7",
+    "baseUrl": "https://api.minimaxi.com/anthropic",
+    "api": "anthropic-messages",
+    "apiKey": "",
+    "models": [
+      {
+        "id": "MiniMax-M2.7",
+        "name": "MiniMax M2.7",
+        "tags": [
+          "免费",
+          "推理"
+        ]
+      }
+    ],
+    "isCurrent": false,
+    "costMultiplier": "1.0",
+    "notes": "Anthropic API 兼容，支持推理"
+  },
+  {
+    "id": "nvidia",
+    "name": "NVIDIA",
+    "nameZh": "NVIDIA DeepSeek",
+    "category": "international",
+    "icon": "nvidia",
+    "iconColor": "#76B900",
+    "baseUrl": "https://integrate.api.nvidia.com/v1",
+    "api": "openai-completions",
+    "apiKey": "",
+    "models": [
+      {
+        "id": "deepseek-ai/deepseek-v4-pro",
+        "name": "DeepSeek V4 Pro",
+        "tags": [
+          "免费"
+        ]
+      }
+    ],
+    "isCurrent": false,
+    "costMultiplier": "1.0",
+    "notes": "NVIDIA 免费端点"
+  },
+  {
+    "id": "greatrouter",
+    "name": "GreatRouter",
+    "nameZh": "GPT-5.4 Pro",
+    "category": "proxy",
+    "icon": "openai",
+    "iconColor": "#10A37F",
+    "baseUrl": "https://endpoint.greatrouter.com/v1",
+    "api": "openai-completions",
+    "apiKey": "",
+    "models": [
+      {
+        "id": "gpt-5.4-pro",
+        "name": "GPT-5.4 Pro",
+        "tags": [
+          "推理"
+        ]
+      }
+    ],
+    "isCurrent": false,
+    "costMultiplier": "1.0",
+    "notes": "GPT 中转代理"
+  },
+  {
+    "id": "codex",
+    "name": "Codex",
+    "nameZh": "ChatGPT Codex",
+    "category": "official",
+    "icon": "openai",
+    "iconColor": "#000000",
+    "baseUrl": "https://chatgpt.com/backend-api/v1",
+    "api": "openai-chatgpt-responses",
+    "apiKey": "",
+    "auth": "token",
+    "models": [
+      {
+        "id": "gpt-5.4",
+        "name": "GPT-5.4",
+        "tags": [
+          "多模态",
+          "推理"
+        ]
+      },
+      {
+        "id": "gpt-5.4-mini",
+        "name": "GPT-5.4 Mini",
+        "tags": [
+          "快速"
+        ]
+      },
+      {
+        "id": "gpt-5.2",
+        "name": "GPT-5.2",
+        "tags": []
+      }
+    ],
+    "isCurrent": false,
+    "costMultiplier": "1.0",
+    "notes": "ChatGPT Codex 响应式 API"
+  },
+  {
+    "id": "xiaomi-mimo",
+    "name": "Xiaomi MiMo",
+    "nameZh": "小米 MiMo",
+    "category": "cn_official",
+    "icon": "xiaomi",
+    "iconColor": "#FF6900",
+    "baseUrl": "https://token-plan-cn.xiaomimimo.com/anthropic",
+    "api": "anthropic-messages",
+    "apiKey": "",
+    "models": [
+      {
+        "id": "mimo-v2.5-pro",
+        "name": "MiMo V2.5 Pro",
+        "tags": [
+          "推理"
+        ]
+      }
+    ],
+    "isCurrent": false,
+    "costMultiplier": "1.0",
+    "notes": "小米 MiMo Token Plan (中国)"
+  }
+]

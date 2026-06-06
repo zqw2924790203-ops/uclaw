@@ -1,0 +1,10 @@
+{
+  "name": "GPT-5.4 Pro",
+  "description": "GPT-5.4 Pro via GreatRouter proxy",
+  "provider": "custom-customd8",
+  "model": "gpt-5.4-pro",
+  "fullId": "custom-customd8/gpt-5.4-pro",
+  "api": "openai-completions",
+  "baseUrl": "https://endpoint.greatrouter.com/v1",
+  "features": ["text", "reasoning"]
+}

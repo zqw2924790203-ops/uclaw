@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "skills": {
+    "skill-vetter": {
+      "version": "1.0.0",
+      "installedAt": 1775092753566
+    },
+    "capability-evolver-pro": {
+      "version": "1.0.2",
+      "installedAt": 1775092943640
+    },
+    "firecrawl-search": {
+      "version": "1.0.0",
+      "installedAt": 1775093044953
+    },
+    "playwright-scraper-skill": {
+      "version": "1.2.0",
+      "installedAt": 1775093175994
+    }
+  }
+}

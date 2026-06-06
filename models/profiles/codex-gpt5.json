@@ -1,0 +1,10 @@
+{
+  "name": "Codex GPT-5.4",
+  "description": "GPT-5.4 via ChatGPT Codex backend (responses API)",
+  "provider": "codex",
+  "model": "gpt-5.4",
+  "fullId": "codex/gpt-5.4",
+  "api": "openai-chatgpt-responses",
+  "baseUrl": "https://chatgpt.com/backend-api/v1",
+  "features": ["text", "image", "reasoning"]
+}

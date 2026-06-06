@@ -1,0 +1,10 @@
+{
+  "name": "NVIDIA DeepSeek v4 Pro",
+  "description": "DeepSeek v4 Pro hosted on NVIDIA endpoint (free tier)",
+  "provider": "custom-customa4",
+  "model": "deepseek-ai/deepseek-v4-pro",
+  "fullId": "custom-customa4/deepseek-ai/deepseek-v4-pro",
+  "api": "openai-completions",
+  "baseUrl": "https://integrate.api.nvidia.com/v1",
+  "features": ["text", "free"]
+}

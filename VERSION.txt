@@ -1,0 +1,17 @@
+UClaW - Portable OpenClaw Gateway
+Version: 1.0.0
+Build: 2026-06-06
+OpenClaw: 2026.6.1 (2e08f0f)
+Node.js: v24.14.1
+Platform: Windows x64
+
+Changelog:
+  v1.0.0 (2026-06-06)
+  - Initial release
+  - Portable Node.js v24.14.1 runtime
+  - OpenClaw v2026.6.1 gateway
+  - Provider database with 6 pre-configured providers
+  - Web UI control panel (Model Switcher + API Config)
+  - One-click model switching (CC Switch style)
+  - Gateway auto-launch with browser open
+  - 5 model profiles: DeepSeek, MiniMax, NVIDIA, GPT-5.4, Codex

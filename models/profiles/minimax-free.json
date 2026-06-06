@@ -1,0 +1,10 @@
+{
+  "name": "MiniMax M2.7",
+  "description": "Free MiniMax M2.7 with reasoning via Anthropic API",
+  "provider": "minimax-portal",
+  "model": "MiniMax-M2.7",
+  "fullId": "minimax-portal/MiniMax-M2.7",
+  "api": "anthropic-messages",
+  "baseUrl": "https://api.minimaxi.com/anthropic",
+  "features": ["text", "reasoning", "free"]
+}
