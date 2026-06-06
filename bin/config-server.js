@@ -294,6 +294,89 @@ function getSetupStatus() {
   return { hasConfig, hasProviders, hasNode, hasOpenclaw, needsSetup };
 }
 
+// ── Usage Tracking ──
+const USAGE_DB = path.join(DATA_DIR, 'usage.json');
+function getUsage() { return readJSON(USAGE_DB) || { calls: [], totals: {} }; }
+function recordUsage(providerId, model, tokens, latencyMs, ok) {
+  const usage = getUsage();
+  const now = new Date().toISOString();
+  usage.calls.push({ ts: now, provider: providerId, model, tokens, latencyMs, ok });
+  // Keep last 500 calls
+  if (usage.calls.length > 500) usage.calls = usage.calls.slice(-500);
+  // Update totals
+  const key = `${providerId}/${model}`;
+  if (!usage.totals[key]) usage.totals[key] = { calls: 0, tokens: 0, errors: 0 };
+  usage.totals[key].calls++;
+  usage.totals[key].tokens += tokens || 0;
+  if (!ok) usage.totals[key].errors++;
+  writeJSON(USAGE_DB, usage);
+}
+
+// ── Chat Proxy ──
+async function chatProxy(providerId, message, history) {
+  const db = getProviderDB();
+  const p = db.find(x => x.id === providerId);
+  if (!p) throw new Error(`Provider "${providerId}" not found`);
+  if (!p.apiKey) throw new Error('API Key 未配置');
+
+  const model = p.selectedModel || p.models?.[0]?.id || 'default';
+  const messages = [...(history || []), { role: 'user', content: message }];
+  const start = Date.now();
+
+  let headers, url, body;
+  if (p.api === 'anthropic-messages') {
+    url = p.baseUrl + '/v1/messages';
+    headers = { 'Content-Type': 'application/json', 'x-api-key': p.apiKey, 'anthropic-version': '2023-06-01' };
+    body = JSON.stringify({ model, max_tokens: 1024, messages });
+  } else {
+    url = p.baseUrl + '/chat/completions';
+    headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${p.apiKey}` };
+    body = JSON.stringify({ model, max_tokens: 1024, messages });
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    const r = await fetch(url, { method: 'POST', headers, body, signal: controller.signal });
+    clearTimeout(timeout);
+    const latency = Date.now() - start;
+    const data = await r.json();
+
+    let reply = '', tokens = 0;
+    if (p.api === 'anthropic-messages') {
+      reply = data.content?.[0]?.text || data.error?.message || JSON.stringify(data);
+      tokens = (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0);
+    } else {
+      reply = data.choices?.[0]?.message?.content || data.error?.message || JSON.stringify(data);
+      tokens = data.usage?.total_tokens || 0;
+    }
+
+    const ok = r.status >= 200 && r.status < 300;
+    recordUsage(providerId, model, tokens, latency, ok);
+    return { ok, reply, model, tokens, latencyMs: latency };
+  } catch (e) {
+    recordUsage(providerId, model, 0, Date.now() - start, false);
+    if (e.name === 'AbortError') throw new Error('请求超时 (30s)');
+    throw e;
+  }
+}
+
+// ── Config Export/Import ──
+function exportConfig() {
+  return {
+    version: '1.0.0',
+    exportedAt: new Date().toISOString(),
+    providers: readJSON(PROVIDERS_DB) || [],
+    config: readJSON(CONFIG_PATH) || {},
+    usage: readJSON(USAGE_DB) || { calls: [], totals: {} }
+  };
+}
+function importConfig(data) {
+  if (data.providers) writeJSON(PROVIDERS_DB, data.providers);
+  if (data.config) writeJSON(CONFIG_PATH, data.config);
+  if (data.usage) writeJSON(USAGE_DB, data.usage);
+}
+
 // ── HTTP Server ──
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') { cors(res); res.writeHead(204); return res.end(); }
@@ -412,6 +495,49 @@ const server = http.createServer(async (req, res) => {
       writeJSON(PROVIDERS_DB, db);
     }
     return json(res, { ok: true, ...getSetupStatus() });
+  }
+
+  // ── Chat ──
+  if (p === '/api/chat' && req.method === 'POST') {
+    const b = await body(req);
+    if (!b.message) return err(res, 'message required');
+    const providerId = b.provider || getProviderDB().find(x => x.isCurrent)?.id;
+    if (!providerId) return err(res, 'No provider selected');
+    try {
+      const result = await chatProxy(providerId, b.message, b.history);
+      return json(res, result);
+    } catch (e) { return err(res, e.message); }
+  }
+
+  // ── Usage ──
+  if (p === '/api/usage' && req.method === 'GET') {
+    return json(res, getUsage());
+  }
+  if (p === '/api/usage/reset' && req.method === 'POST') {
+    writeJSON(USAGE_DB, { calls: [], totals: {} });
+    return json(res, { ok: true });
+  }
+
+  // ── Config Export/Import ──
+  if (p === '/api/config/export' && req.method === 'GET') {
+    const exported = exportConfig();
+    // Mask API keys for export
+    exported.providers.forEach(p => { if (p.apiKey) p.apiKey = '***'; });
+    if (exported.config?.models?.providers) {
+      for (const p of Object.values(exported.config.models.providers)) {
+        if (p.apiKey) p.apiKey = '***';
+      }
+    }
+    res.setHeader('Content-Disposition', 'attachment; filename="uclaw-config.json"');
+    return json(res, exported);
+  }
+  if (p === '/api/config/import' && req.method === 'POST') {
+    const b = await body(req);
+    if (!b.providers && !b.config) return err(res, 'Invalid import data');
+    try {
+      importConfig(b);
+      return json(res, { ok: true, ...getSetupStatus() });
+    } catch (e) { return err(res, e.message); }
   }
 
   err(res, 'Not found', 404);
