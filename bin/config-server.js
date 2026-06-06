@@ -122,6 +122,7 @@ function stopGateway() {
 
 async function restartGateway() {
   log('Restarting gateway...');
+  backupConfig('pre-restart');
   stopGateway();
   // Wait for port to be released
   for (let i = 0; i < 15; i++) {
@@ -377,6 +378,195 @@ function importConfig(data) {
   if (data.usage) writeJSON(USAGE_DB, data.usage);
 }
 
+// ── Gateway Watchdog ──
+let watchdogEnabled = true;
+let watchdogTimer = null;
+let crashCount = 0;
+const MAX_CRASH_RESTART = 5;
+
+function startWatchdog() {
+  if (watchdogTimer) clearInterval(watchdogTimer);
+  watchdogTimer = setInterval(async () => {
+    if (!watchdogEnabled) return;
+    // If gateway was running but process died, auto-restart
+    if (gatewayStatus === 'running' && (!gatewayProc || gatewayProc.killed)) {
+      crashCount++;
+      if (crashCount > MAX_CRASH_RESTART) {
+        log(`Watchdog: Gateway crashed ${crashCount} times, giving up. Manual restart needed.`);
+        gatewayStatus = 'error';
+        return;
+      }
+      log(`Watchdog: Gateway crashed (attempt ${crashCount}/${MAX_CRASH_RESTART}), restarting...`);
+      gatewayStatus = 'stopped';
+      gatewayProc = null;
+      await new Promise(r => setTimeout(r, 2000));
+      startGateway();
+    }
+    // Check health endpoint if gateway is supposed to be running
+    if (gatewayStatus === 'running') {
+      try {
+        const r = await fetch(`http://localhost:${GATEWAY_PORT}/health`, { signal: AbortSignal.timeout(5000) });
+        if (r.ok) crashCount = 0; // Reset crash counter on healthy response
+      } catch { /* health check failed but process still alive, might be starting */ }
+    }
+  }, 15000); // Check every 15s
+}
+
+// ── Config Rollback ──
+const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+function backupConfig(label) {
+  if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const name = `openclaw_${ts}${label ? '_' + label : ''}.json`;
+  if (fs.existsSync(CONFIG_PATH)) {
+    fs.copyFileSync(CONFIG_PATH, path.join(BACKUP_DIR, name));
+    log('Config backup: ' + name);
+  }
+}
+function getLastBackup() {
+  if (!fs.existsSync(BACKUP_DIR)) return null;
+  const files = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('openclaw_') && f.endsWith('.json')).sort().reverse();
+  return files[0] ? path.join(BACKUP_DIR, files[0]) : null;
+}
+function rollbackConfig() {
+  const backup = getLastBackup();
+  if (!backup) { log('No backup to rollback to'); return false; }
+  fs.copyFileSync(backup, CONFIG_PATH);
+  log('Config rolled back to: ' + path.basename(backup));
+  return true;
+}
+
+// ── Streaming Chat (SSE) ──
+async function chatStream(providerId, message, history, res) {
+  const db = getProviderDB();
+  const p = db.find(x => x.id === providerId);
+  if (!p) throw new Error(`Provider "${providerId}" not found`);
+  if (!p.apiKey) throw new Error('API Key 未配置');
+
+  const model = p.selectedModel || p.models?.[0]?.id || 'default';
+  const messages = [...(history || []), { role: 'user', content: message }];
+  const start = Date.now();
+
+  let headers, url, body;
+  if (p.api === 'anthropic-messages') {
+    url = p.baseUrl + '/v1/messages';
+    headers = { 'Content-Type': 'application/json', 'x-api-key': p.apiKey, 'anthropic-version': '2023-06-01' };
+    body = JSON.stringify({ model, max_tokens: 1024, stream: true, messages });
+  } else {
+    url = p.baseUrl + '/chat/completions';
+    headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${p.apiKey}` };
+    body = JSON.stringify({ model, max_tokens: 1024, stream: true, messages });
+  }
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*'
+  });
+  res.write(`data: ${JSON.stringify({ type: 'model', model })}\n\n`);
+
+  try {
+    const r = await fetch(url, { method: 'POST', headers, body });
+    if (!r.ok) {
+      const errText = await r.text();
+      res.write(`data: ${JSON.stringify({ type: 'error', error: `HTTP ${r.status}: ${errText.slice(0, 200)}` })}\n\n`);
+      res.write('data: [DONE]\n\n');
+      recordUsage(providerId, model, 0, Date.now() - start, false);
+      return res.end();
+    }
+
+    let fullReply = '';
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(data);
+          let delta = '';
+          if (p.api === 'anthropic-messages') {
+            if (parsed.type === 'content_block_delta') delta = parsed.delta?.text || '';
+          } else {
+            delta = parsed.choices?.[0]?.delta?.content || '';
+          }
+          if (delta) {
+            fullReply += delta;
+            res.write(`data: ${JSON.stringify({ type: 'delta', text: delta })}\n\n`);
+          }
+        } catch {}
+      }
+    }
+
+    const latency = Date.now() - start;
+    const tokens = fullReply.length; // Approximate
+    res.write(`data: ${JSON.stringify({ type: 'done', tokens, latencyMs: latency })}\n\n`);
+    res.write('data: [DONE]\n\n');
+    recordUsage(providerId, model, tokens, latency, true);
+    return res.end();
+  } catch (e) {
+    const msg = e.name === 'AbortError' ? '请求超时' : e.message;
+    res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
+    res.write('data: [DONE]\n\n');
+    recordUsage(providerId, model, 0, Date.now() - start, false);
+    return res.end();
+  }
+}
+
+// ── Agent Management ──
+function getAgents() {
+  const cfg = readJSON(CONFIG_PATH);
+  const agents = cfg?.agents?.list || [];
+  const defaults = cfg?.agents?.defaults || {};
+  return agents.map(a => ({
+    ...a,
+    primaryModel: defaults.model?.primary || null,
+    workspace: a.workspace || defaults.workspace
+  }));
+}
+function setAgentModel(agentId, fullModelId) {
+  const cfg = readJSON(CONFIG_PATH);
+  if (!cfg) throw new Error('Config not found');
+  if (agentId === 'main' || agentId === 'default') {
+    if (!cfg.agents) cfg.agents = { defaults: {} };
+    if (!cfg.agents.defaults) cfg.agents.defaults = {};
+    if (!cfg.agents.defaults.model) cfg.agents.defaults.model = {};
+    cfg.agents.defaults.model.primary = fullModelId;
+    writeJSON(CONFIG_PATH, cfg);
+  }
+  // Per-agent model override (stored in providers.json as agentModels)
+  const db = getProviderDB();
+  if (!db._agentModels) db._agentModels = {};
+  db._agentModels[agentId] = fullModelId;
+  writeJSON(PROVIDERS_DB, db);
+}
+
+// ── Plugin Management ──
+function getPlugins() {
+  const cfg = readJSON(CONFIG_PATH);
+  const entries = cfg?.plugins?.entries || {};
+  const allow = cfg?.plugins?.allow || [];
+  return { entries, allow, enabled: cfg?.plugins?.enabled !== false, bundledDiscovery: cfg?.plugins?.bundledDiscovery };
+}
+function togglePlugin(pluginId, enabled) {
+  const cfg = readJSON(CONFIG_PATH);
+  if (!cfg.plugins) cfg.plugins = { enabled: true, allow: [], entries: {} };
+  if (!cfg.plugins.entries) cfg.plugins.entries = {};
+  if (!cfg.plugins.entries[pluginId]) cfg.plugins.entries[pluginId] = {};
+  cfg.plugins.entries[pluginId].enabled = enabled;
+  writeJSON(CONFIG_PATH, cfg);
+}
+
 // ── HTTP Server ──
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') { cors(res); res.writeHead(204); return res.end(); }
@@ -508,6 +698,15 @@ const server = http.createServer(async (req, res) => {
       return json(res, result);
     } catch (e) { return err(res, e.message); }
   }
+  // SSE Streaming chat
+  if (p === '/api/chat/stream' && req.method === 'POST') {
+    const b = await body(req);
+    if (!b.message) return err(res, 'message required');
+    const providerId = b.provider || getProviderDB().find(x => x.isCurrent)?.id;
+    if (!providerId) return err(res, 'No provider selected');
+    try { return chatStream(providerId, b.message, b.history, res); }
+    catch (e) { return err(res, e.message); }
+  }
 
   // ── Usage ──
   if (p === '/api/usage' && req.method === 'GET') {
@@ -521,7 +720,6 @@ const server = http.createServer(async (req, res) => {
   // ── Config Export/Import ──
   if (p === '/api/config/export' && req.method === 'GET') {
     const exported = exportConfig();
-    // Mask API keys for export
     exported.providers.forEach(p => { if (p.apiKey) p.apiKey = '***'; });
     if (exported.config?.models?.providers) {
       for (const p of Object.values(exported.config.models.providers)) {
@@ -535,9 +733,47 @@ const server = http.createServer(async (req, res) => {
     const b = await body(req);
     if (!b.providers && !b.config) return err(res, 'Invalid import data');
     try {
+      backupConfig('pre-import');
       importConfig(b);
       return json(res, { ok: true, ...getSetupStatus() });
-    } catch (e) { return err(res, e.message); }
+    } catch (e) {
+      rollbackConfig();
+      return err(res, e.message);
+    }
+  }
+
+  // ── Agents ──
+  if (p === '/api/agents' && req.method === 'GET') {
+    return json(res, getAgents());
+  }
+  const agentModelMatch = p.match(/^\/api\/agents\/([^/]+)\/model$/);
+  if (agentModelMatch && req.method === 'PUT') {
+    const b = await body(req);
+    if (!b.fullId) return err(res, 'fullId required');
+    try { setAgentModel(decodeURIComponent(agentModelMatch[1]), b.fullId); return json(res, { ok: true }); }
+    catch (e) { return err(res, e.message); }
+  }
+
+  // ── Plugins ──
+  if (p === '/api/plugins' && req.method === 'GET') {
+    return json(res, getPlugins());
+  }
+  const pluginMatch = p.match(/^\/api\/plugins\/([^/]+)\/toggle$/);
+  if (pluginMatch && req.method === 'PUT') {
+    const b = await body(req);
+    try { togglePlugin(decodeURIComponent(pluginMatch[1]), b.enabled); return json(res, { ok: true }); }
+    catch (e) { return err(res, e.message); }
+  }
+
+  // ── Config Rollback ──
+  if (p === '/api/config/rollback' && req.method === 'POST') {
+    const ok = rollbackConfig();
+    return json(res, { ok, message: ok ? '已回滚到上一个配置' : '没有可回滚的备份' });
+  }
+  if (p === '/api/config/backups' && req.method === 'GET') {
+    if (!fs.existsSync(BACKUP_DIR)) return json(res, []);
+    const files = fs.readdirSync(BACKUP_DIR).filter(f => f.endsWith('.json')).sort().reverse().slice(0, 10);
+    return json(res, files);
   }
 
   err(res, 'Not found', 404);
@@ -546,6 +782,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '127.0.0.1', () => {
   log(`Config Panel: http://localhost:${PORT}`);
   log(`Data: ${DATA_DIR}`);
+  startWatchdog();
   // Auto-start gateway
   const status = getSetupStatus();
   if (status.hasConfig && status.hasProviders) {

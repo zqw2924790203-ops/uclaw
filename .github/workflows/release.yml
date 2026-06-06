@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js v24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install openclaw locally
+        run: npm install openclaw@2026.6.1 --prefix bin/openclaw
+
+      - name: Copy Node.js runtime to bin/node
+        run: |
+          mkdir -p bin/node/node_modules
+          copy (Get-Command node.exe).Source bin/node/node.exe
+          copy (Get-Command npm.cmd).Source bin/node/npm.cmd
+          $npmRoot = npm root -g
+          Copy-Item -Recurse $npmRoot/../npm bin/node/node_modules/npm
+
+      - name: Create release zip
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $zipName = "claw-u-${tag}.zip"
+          $exclude = @(
+            ".git",
+            ".github",
+            "bin/gh.exe",
+            "data/state",
+            "data/browser",
+            "data/npm",
+            "data/tmp",
+            "*.bak"
+          )
+          # Build 7z exclude arguments
+          $exArgs = @()
+          foreach ($ex in $exclude) {
+            $exArgs += "-xr!$ex"
+          }
+          # Exclude top-level node_modules (bin/node_modules/openclaw/node_modules is kept)
+          $exArgs += "-xr!node_modules"
+          & 7z a -tzip $zipName . $exArgs
+          echo "ZIP_NAME=$zipName" >> $env:GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: ${{ env.ZIP_NAME }}

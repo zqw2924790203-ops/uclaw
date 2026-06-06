@@ -17,7 +17,7 @@
   .sidebar .brand{padding:1.25rem 1rem .75rem;font-weight:700;font-size:1.1rem;
     border-bottom:1px solid var(--border);letter-spacing:-.02em}
   .sidebar .brand span{color:var(--accent)}
-  .sidebar nav{flex:1;padding:.5rem 0}
+  .sidebar nav{flex:1;padding:.5rem 0;overflow-y:auto}
   .nav-item{display:flex;align-items:center;gap:.6rem;padding:.55rem 1rem;cursor:pointer;
     color:var(--dim);font-size:.82rem;transition:all .15s;border-left:2px solid transparent}
   .nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
@@ -97,7 +97,8 @@
   .modal input,.modal select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.45rem .6rem;font-size:.8rem;outline:none;font-family:inherit}
   .modal .btn-group{display:flex;gap:.4rem;justify-content:flex-end;margin-top:1rem}
 
-  .toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:.6rem 1rem;background:var(--surface);border:1px solid var(--green);border-radius:8px;color:var(--green);font-size:.8rem;opacity:0;transition:opacity .25s;pointer-events:none;z-index:100}
+  .toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:100;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+  .toast{padding:.6rem 1rem;background:var(--surface);border:1px solid var(--green);border-radius:8px;color:var(--green);font-size:.8rem;opacity:0;transition:opacity .25s;pointer-events:auto}
   .toast.show{opacity:1}.toast.err{border-color:var(--red);color:var(--red)}.toast.warn{border-color:var(--yellow);color:var(--yellow)}
   .page{display:none}.page.active{display:block}
   .info-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:.75rem}
@@ -106,7 +107,11 @@
 
   /* Gateway panel */
   .gw-bar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
-  .gw-logs{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.5rem .75rem;font-family:'SF Mono',Consolas,monospace;font-size:.7rem;color:var(--dim);max-height:200px;overflow-y:auto;line-height:1.6;margin-top:.75rem;white-space:pre-wrap;word-break:break-all}
+  .gw-logs{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.5rem .75rem;font-family:'SF Mono',Consolas,monospace;font-size:.7rem;color:var(--dim);max-height:300px;overflow-y:auto;line-height:1.6;margin-top:.75rem;white-space:pre-wrap;word-break:break-all}
+  .gw-logs .log-highlight{background:rgba(251,191,36,.2);color:var(--yellow)}
+  .log-filter-bar{display:flex;gap:.5rem;margin-top:.5rem;align-items:center}
+  .log-filter-bar input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.35rem .55rem;font-size:.78rem;outline:none;font-family:inherit}
+  .log-filter-bar input:focus{border-color:var(--accent)}
 
   /* Setup wizard */
   .setup-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center}
@@ -121,6 +126,44 @@
   .setup-card input:focus{border-color:var(--accent)}
   .setup-card .form-help{font-size:.72rem;color:var(--dim);margin-top:.25rem}
   .sep{border:none;border-top:1px solid var(--border);margin:1rem 0}
+
+  /* Toggle switch */
+  .toggle-wrap{position:relative;width:40px;height:22px;flex-shrink:0}
+  .toggle-wrap input{opacity:0;width:0;height:0}
+  .toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:22px;transition:.2s}
+  .toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+  .toggle-wrap input:checked+.toggle-slider{background:var(--green)}
+  .toggle-wrap input:checked+.toggle-slider::before{transform:translateX(18px)}
+
+  /* Plugin list */
+  .plugin-item{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.5rem}
+  .plugin-info{flex:1;min-width:0}
+  .plugin-name{font-weight:600;font-size:.88rem}
+  .plugin-desc{font-size:.72rem;color:var(--dim);margin-top:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* Agent list */
+  .agent-item{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.5rem}
+  .agent-info{flex:1;min-width:0}
+  .agent-name{font-weight:600;font-size:.88rem}
+  .agent-meta{font-size:.72rem;color:var(--dim);margin-top:.15rem}
+  .agent-model-select{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.3rem .5rem;font-size:.75rem;outline:none;max-width:220px}
+  .agent-model-select:focus{border-color:var(--accent)}
+
+  /* Chat streaming */
+  .chat-msg{max-width:80%;padding:.55rem .85rem;border-radius:10px;font-size:.85rem;line-height:1.55}
+  .chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:2px}
+  .chat-msg.assistant{align-self:flex-start;background:var(--card);border:1px solid var(--border);border-bottom-left-radius:2px}
+  .chat-msg.assistant pre{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.5rem .75rem;margin:.4rem 0;overflow-x:auto;font-family:'SF Mono',Consolas,monospace;font-size:.78rem;line-height:1.5}
+  .chat-msg.assistant code{font-family:'SF Mono',Consolas,monospace;font-size:.78rem;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:3px}
+  .chat-msg.assistant pre code{background:none;padding:0}
+  .chat-msg.assistant p{margin:.3rem 0}
+  .chat-msg.assistant ul,.chat-msg.assistant ol{padding-left:1.2rem;margin:.3rem 0}
+  .chat-meta{font-size:.7rem;color:var(--dim);margin-top:.3rem}
+  .chat-error{align-self:flex-start;color:var(--red);font-size:.82rem}
+  .chat-typing{align-self:flex-start;color:var(--dim);font-size:.82rem;display:flex;align-items:center;gap:.4rem}
+
+  /* Backup list */
+  .backup-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:.35rem;font-size:.8rem;font-family:'SF Mono',Consolas,monospace}
 </style>
 </head>
 <body>
@@ -155,6 +198,8 @@
       <div class="nav-item" data-page="gateway">🌐 Gateway</div>
       <div class="nav-item" data-page="usage">📊 用量统计</div>
       <div class="nav-item" data-page="add">➕ 添加提供商</div>
+      <div class="nav-item" data-page="plugins">🔌 插件管理</div>
+      <div class="nav-item" data-page="agents">🤖 Agent 管理</div>
       <div class="nav-item" data-page="sync">💾 导入导出</div>
     </nav>
     <div class="version">OpenClaw v2026.6.1 · v1.0.0</div>
@@ -168,6 +213,24 @@
         <div id="gwChip"></div>
       </div>
       <div class="provider-grid" id="providerGrid"></div>
+    </div>
+
+    <!-- Chat Page (Streaming) -->
+    <div id="page-chat" class="page">
+      <div class="page-title">
+        测试对话
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span id="chat-model" style="font-size:.75rem;color:var(--dim);font-weight:400"></span>
+          <button class="btn btn-sm btn-ghost" onclick="clearChat()">清空</button>
+        </div>
+      </div>
+      <div class="info-card" style="display:flex;flex-direction:column;height:calc(100vh - 180px)">
+        <div id="chat-messages" style="flex:1;overflow-y:auto;padding:.5rem 0;display:flex;flex-direction:column;gap:.6rem"></div>
+        <div style="display:flex;gap:.5rem;padding-top:.75rem;border-top:1px solid var(--border)">
+          <input id="chat-input" placeholder="输入消息测试模型...（Enter 发送）" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:.5rem .75rem;font-size:.85rem;outline:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatStream()}">
+          <button class="btn btn-primary" onclick="sendChatStream()" id="chat-send">发送</button>
+        </div>
+      </div>
     </div>
 
     <!-- Gateway Page -->
@@ -184,10 +247,21 @@
           <button class="btn btn-danger" onclick="gwAction('stop')">■ 停止</button>
           <button class="btn" onclick="gwAction('restart')">🔄 重启</button>
           <a class="btn" id="gw-console-link" href="http://localhost:18789/" target="_blank">🎛️ OpenClaw 控制台</a>
+          <button class="btn btn-sm" onclick="doRollback()" style="margin-left:auto">⏪ 回滚配置</button>
           <span id="gw-action-status" style="font-size:.72rem;color:var(--dim);margin-left:.5rem;"></span>
+        </div>
+        <div class="log-filter-bar">
+          <input id="gw-log-filter" placeholder="搜索日志..." oninput="filterLogs()">
+          <button class="btn btn-sm btn-ghost" onclick="refreshGwLogs()">刷新日志</button>
         </div>
         <div class="gw-logs" id="gw-logs">等待日志...</div>
       </div>
+    </div>
+
+    <!-- Usage Page -->
+    <div id="page-usage" class="page">
+      <div class="page-title">用量统计 <button class="btn btn-sm btn-danger" onclick="resetUsage()" style="margin-left:auto">清零</button></div>
+      <div id="usage-content">加载中...</div>
     </div>
 
     <!-- Add Provider Page -->
@@ -206,22 +280,16 @@
       </div>
     </div>
 
-    <!-- Chat Page -->
-    <div id="page-chat" class="page">
-      <div class="page-title">测试对话 <span id="chat-model" style="font-size:.75rem;color:var(--dim);font-weight:400;margin-left:.5rem"></span></div>
-      <div class="info-card" style="display:flex;flex-direction:column;height:calc(100vh - 180px)">
-        <div id="chat-messages" style="flex:1;overflow-y:auto;padding:.5rem 0;display:flex;flex-direction:column;gap:.6rem"></div>
-        <div style="display:flex;gap:.5rem;padding-top:.75rem;border-top:1px solid var(--border)">
-          <input id="chat-input" placeholder="输入消息测试模型..." style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:.5rem .75rem;font-size:.85rem;outline:none" onkeydown="if(event.key==='Enter')sendChat()">
-          <button class="btn btn-primary" onclick="sendChat()" id="chat-send">发送</button>
-        </div>
-      </div>
+    <!-- Plugins Page -->
+    <div id="page-plugins" class="page">
+      <div class="page-title">插件管理</div>
+      <div id="plugins-content">加载中...</div>
     </div>
 
-    <!-- Usage Page -->
-    <div id="page-usage" class="page">
-      <div class="page-title">用量统计 <button class="btn btn-sm btn-danger" onclick="resetUsage()" style="margin-left:auto">清零</button></div>
-      <div id="usage-content">加载中...</div>
+    <!-- Agents Page -->
+    <div id="page-agents" class="page">
+      <div class="page-title">Agent 管理</div>
+      <div id="agents-content">加载中...</div>
     </div>
 
     <!-- Sync Page -->
@@ -233,18 +301,22 @@
           <button class="btn btn-primary" onclick="exportConfig()">📥 导出配置</button>
           <button class="btn" onclick="document.getElementById('import-file').click()">📤 导入配置</button>
           <input type="file" id="import-file" accept=".json" style="display:none" onchange="importConfig(this)">
+          <button class="btn" onclick="loadBackups()">📋 查看备份</button>
+          <button class="btn btn-danger" onclick="doRollback()">⏪ 回滚到上一备份</button>
         </div>
         <div id="sync-result" style="margin-top:.75rem;font-size:.82rem"></div>
+        <div id="backup-list" style="margin-top:.75rem"></div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
 const API = location.origin;
 let providers = [], expandedId = null, gwPollTimer = null;
+let gwRawLogs = [];
 
 // ── Nav ──
 document.querySelectorAll('.nav-item').forEach(el => el.onclick = () => {
@@ -252,19 +324,44 @@ document.querySelectorAll('.nav-item').forEach(el => el.onclick = () => {
   el.classList.add('active');
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + el.dataset.page).classList.add('active');
+  // Page-specific loads
+  const pg = el.dataset.page;
+  if (pg === 'usage') loadUsage();
+  if (pg === 'chat') {
+    const cur = providers.find(p => p.isCurrent);
+    document.getElementById('chat-model').textContent = cur ? `${cur.nameZh||cur.name} · ${cur.selectedModel||cur.models?.[0]?.id||''}` : '';
+  }
+  if (pg === 'plugins') loadPlugins();
+  if (pg === 'agents') loadAgents();
 });
 
 async function api(path, opts = {}) {
   const r = await fetch(API + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
   return r.json();
 }
-function toast(msg, isErr = false, isWarn = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show' + (isErr ? ' err' : isWarn ? ' warn' : '');
-  setTimeout(() => t.className = 'toast', 4000);
+
+// ── Toast System ──
+function toast(msg, type = 'ok') {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  const cls = type === 'err' ? 'err' : type === 'warn' ? 'warn' : '';
+  t.className = 'toast show ' + cls;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => { t.className = 'toast ' + cls; setTimeout(() => t.remove(), 300); }, 4000);
 }
+
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
 const catLabel = c => ({official:'官方',cn_official:'国内',proxy:'中转',custom:'自定义',international:'国际'})[c]||c;
 const catClass = c => ({official:'official',cn_official:'cn',proxy:'proxy'})[c]||'';
+
+// ── ESC to close modals ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-bg.open').forEach(m => m.classList.remove('open'));
+  }
+});
 
 // ── First Run Setup ──
 async function checkSetup() {
@@ -277,18 +374,17 @@ async function checkSetup() {
 }
 async function doSetup() {
   const key = document.getElementById('setup-key').value.trim();
-  if (!key) { toast('请输入 API Key', true); return; }
+  if (!key) { toast('请输入 API Key', 'err'); return; }
   try {
     await api('/api/setup/init', { method: 'POST', body: JSON.stringify({ apiKey: key }) });
-    // Set selected model
     const model = document.getElementById('setup-model').value;
     await api('/api/providers/deepseek/switch', { method: 'PUT', body: JSON.stringify({ modelId: model }) });
     document.getElementById('setupWizard').classList.add('hidden');
-    toast('✓ 配置完成，正在启动 Gateway...');
+    toast('配置完成，正在启动 Gateway...');
     await api('/api/gateway/start', { method: 'POST' });
     loadProviders();
     startGwPoll();
-  } catch (e) { toast('配置失败: ' + e.message, true); }
+  } catch (e) { toast('配置失败: ' + e.message, 'err'); }
 }
 
 // ── Gateway ──
@@ -298,23 +394,57 @@ async function checkGateway() {
     const d = await api('/api/gateway');
     const online = d.online || d.status === 'running';
     chip.innerHTML = `<span class="status-chip ${online?'ok':'err'}"><span class="dot ${online?'ok':'err'}"></span>${online?'Gateway 在线':'Gateway 离线'}</span>`;
-    // Update gateway page
     const statusMap = { stopped: '● 已停止', starting: '● 启动中...', running: '● 运行中', error: '● 错误' };
     document.getElementById('gw-status').innerHTML = `<span style="color:${d.status==='running'?'var(--green)':d.status==='starting'?'var(--yellow)':'var(--red)'}">${statusMap[d.status]||d.status}</span>`;
     document.getElementById('gw-port').textContent = d.port;
     document.getElementById('gw-pid').textContent = d.pid || '-';
     document.getElementById('gw-uptime').textContent = d.uptime > 0 ? formatUptime(d.uptime) : '-';
     document.getElementById('gw-console-link').href = `http://localhost:${d.port}/`;
-    if (d.logs?.length) document.getElementById('gw-logs').textContent = d.logs.join('\n');
+    if (d.logs?.length) {
+      gwRawLogs = d.logs;
+      renderFilteredLogs();
+    }
   } catch {
     chip.innerHTML = '<span class="status-chip err"><span class="dot err"></span>面板离线</span>';
   }
 }
+
 function formatUptime(s) {
   if (s < 60) return s + '秒';
   if (s < 3600) return Math.floor(s/60) + '分' + (s%60) + '秒';
   return Math.floor(s/3600) + '时' + Math.floor((s%3600)/60) + '分';
 }
+
+async function refreshGwLogs() {
+  try {
+    const d = await api('/api/gateway/logs');
+    if (d.logs?.length) { gwRawLogs = d.logs; renderFilteredLogs(); }
+  } catch (e) { toast('获取日志失败', 'err'); }
+}
+
+function filterLogs() { renderFilteredLogs(); }
+
+function renderFilteredLogs() {
+  const filter = (document.getElementById('gw-log-filter')?.value || '').toLowerCase();
+  const el = document.getElementById('gw-logs');
+  if (!gwRawLogs.length) { el.innerHTML = '<span style="color:var(--dim)">暂无日志</span>'; return; }
+  let lines = gwRawLogs;
+  if (filter) {
+    lines = lines.filter(l => l.toLowerCase().includes(filter));
+  }
+  if (!lines.length) { el.innerHTML = '<span style="color:var(--dim)">无匹配日志</span>'; return; }
+  const html = lines.map(l => {
+    if (filter) {
+      const escaped = escHtml(l);
+      const re = new RegExp('(' + escHtml(filter).replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+      return escaped.replace(re, '<span class="log-highlight">$1</span>');
+    }
+    return escHtml(l);
+  }).join('\n');
+  el.innerHTML = html;
+  el.scrollTop = el.scrollHeight;
+}
+
 async function gwAction(action) {
   const status = document.getElementById('gw-action-status');
   status.textContent = '执行中...'; status.style.color = 'var(--yellow)';
@@ -322,7 +452,6 @@ async function gwAction(action) {
     const r = await api(`/api/gateway/${action}`, { method: 'POST' });
     status.textContent = r.ok ? '✓ ' + action : '✗ ' + (r.error||'');
     status.style.color = r.ok ? 'var(--green)' : 'var(--red)';
-    // Poll for status change
     setTimeout(checkGateway, 2000);
     if (action === 'restart') { setTimeout(checkGateway, 5000); setTimeout(checkGateway, 8000); }
   } catch (e) {
@@ -330,10 +459,32 @@ async function gwAction(action) {
   }
   setTimeout(() => { status.textContent = ''; }, 5000);
 }
+
 function startGwPoll() {
   if (gwPollTimer) return;
   checkGateway();
   gwPollTimer = setInterval(checkGateway, 5000);
+}
+
+// ── Config Rollback ──
+async function doRollback() {
+  if (!confirm('确定回滚到上一备份？当前配置将被覆盖。')) return;
+  try {
+    const r = await api('/api/config/rollback', { method: 'POST' });
+    if (r.ok) { toast('配置已回滚'); loadProviders(); }
+    else toast('回滚失败: ' + (r.error || ''), 'err');
+  } catch (e) { toast('回滚失败: ' + e.message, 'err'); }
+}
+
+async function loadBackups() {
+  try {
+    const r = await api('/api/config/backups');
+    const list = document.getElementById('backup-list');
+    if (!r.length && !r.files?.length) { list.innerHTML = '<div style="color:var(--dim);font-size:.82rem;margin-top:.5rem">暂无备份文件</div>'; return; }
+    const files = r.files || r;
+    list.innerHTML = '<div style="font-size:.82rem;color:var(--dim);margin-bottom:.35rem">备份文件：</div>' +
+      files.map(f => `<div class="backup-item">${escHtml(typeof f === 'string' ? f : f.name || f.filename || JSON.stringify(f))}</div>`).join('');
+  } catch (e) { toast('获取备份列表失败', 'err'); }
 }
 
 // ── Providers ──
@@ -404,22 +555,22 @@ async function doSwitch(id, name) {
   try {
     const r = await api(`/api/providers/${encodeURIComponent(id)}/switch`, { method: 'PUT', body: JSON.stringify({ modelId: mid }) });
     if (r.ok) {
-      toast(`✓ ${name} → ${mid}${r.restart ? '（Gateway 重启中...）' : ''}`, false, !!r.restart);
+      toast(`${name} → ${mid}${r.restart ? '（Gateway 重启中...）' : ''}`, r.restart ? 'warn' : 'ok');
       loadProviders();
       if (r.restart) { setTimeout(checkGateway, 3000); setTimeout(checkGateway, 6000); }
-    } else toast('失败: '+(r.error||''), true);
-  } catch(e) { toast('失败: '+e.message, true); }
+    } else toast('失败: '+(r.error||''), 'err');
+  } catch(e) { toast('失败: '+e.message, 'err'); }
 }
 
 async function saveKey(id) {
   const input = document.getElementById('key-' + id);
   const key = input.value.trim();
-  if (!key) { toast('请输入 API Key', true); return; }
+  if (!key) { toast('请输入 API Key', 'err'); return; }
   try {
     await api(`/api/providers/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ apiKey: key }) });
     input.value = ''; input.placeholder = key.slice(0,6) + '...' + key.slice(-4);
-    toast('✓ API Key 已保存'); loadProviders();
-  } catch(e) { toast('保存失败', true); }
+    toast('API Key 已保存'); loadProviders();
+  } catch(e) { toast('保存失败', 'err'); }
 }
 
 async function doTest(id) {
@@ -438,62 +589,188 @@ async function doTest(id) {
 async function addProvider() {
   const id = document.getElementById('n-id').value.trim();
   const baseUrl = document.getElementById('n-url').value.trim();
-  if (!id||!baseUrl) return toast('请填写 ID 和 URL', true);
+  if (!id||!baseUrl) return toast('请填写 ID 和 URL', 'err');
   try {
     await api('/api/providers', { method:'POST', body: JSON.stringify({
       id, name:document.getElementById('n-name').value||id, category:document.getElementById('n-cat').value,
       baseUrl, api:document.getElementById('n-api').value, apiKey:document.getElementById('n-key').value,
       models:[{id:document.getElementById('n-mid').value||'default',name:document.getElementById('n-mname').value||'Default',tags:[]}]
     })});
-    toast('✓ 已添加'); ['n-id','n-name','n-url','n-key','n-mid','n-mname'].forEach(i=>document.getElementById(i).value='');
+    toast('已添加'); ['n-id','n-name','n-url','n-key','n-mid','n-mname'].forEach(i=>document.getElementById(i).value='');
     loadProviders();
-  } catch(e) { toast('添加失败', true); }
+  } catch(e) { toast('添加失败', 'err'); }
 }
 
 async function delProvider(id) {
   if (!confirm('确定删除 '+id+'？')) return;
-  try { await api(`/api/providers/${encodeURIComponent(id)}`,{method:'DELETE'}); loadProviders(); toast('✓ 已删除'); } catch(e) { toast('删除失败', true); }
+  try { await api(`/api/providers/${encodeURIComponent(id)}`,{method:'DELETE'}); loadProviders(); toast('已删除'); } catch(e) { toast('删除失败', 'err'); }
 }
 
-// ── Chat ──
+// ── Streaming Chat ──
 let chatHistory = [];
-async function sendChat() {
+let chatAbortController = null;
+
+function clearChat() {
+  chatHistory = [];
+  document.getElementById('chat-messages').innerHTML = '';
+  document.getElementById('chat-model').textContent = '';
+}
+
+function appendChatMsg(role, html) {
+  const messages = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.innerHTML = html;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+
+// Simple markdown-like rendering for assistant text
+function renderMarkdown(text) {
+  let html = escHtml(text);
+  // Code blocks: ```lang\n...\n```
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    return `<pre><code>${code.replace(/\n$/, '')}</code></pre>`;
+  });
+  // Inline code
+  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  // Bold
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic
+  html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+  // Unordered list items
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+  // Paragraphs (double newline)
+  html = html.replace(/\n\n/g, '</p><p>');
+  // Single newlines (outside pre)
+  html = html.replace(/\n/g, '<br>');
+  return html;
+}
+
+async function sendChatStream() {
   const input = document.getElementById('chat-input');
   const msg = input.value.trim();
   if (!msg) return;
   input.value = '';
-  const messages = document.getElementById('chat-messages');
 
   // Add user message
-  messages.innerHTML += `<div style="align-self:flex-end;max-width:70%;background:var(--accent);color:#fff;padding:.5rem .8rem;border-radius:10px 10px 2px 10px;font-size:.85rem">${escHtml(msg)}</div>`;
-  messages.scrollTop = messages.scrollHeight;
+  appendChatMsg('user', escHtml(msg));
 
-  // Add loading
-  const loadId = 'loading-' + Date.now();
-  messages.innerHTML += `<div id="${loadId}" style="align-self:flex-start;color:var(--dim);font-size:.82rem"><span class="spinner"></span> 思考中...</div>`;
-  messages.scrollTop = messages.scrollHeight;
+  // Add typing indicator
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'chat-typing';
+  typingDiv.id = 'chat-typing';
+  typingDiv.innerHTML = '<span class="spinner"></span> 思考中...';
+  document.getElementById('chat-messages').appendChild(typingDiv);
+  document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
 
   const btn = document.getElementById('chat-send');
   btn.disabled = true;
 
+  // Abort previous if still running
+  if (chatAbortController) chatAbortController.abort();
+  chatAbortController = new AbortController();
+
+  let assistantDiv = null;
+  let fullText = '';
+  let model = '', tokens = 0, latencyMs = 0;
+
   try {
-    const r = await api('/api/chat', { method: 'POST', body: JSON.stringify({ message: msg, history: chatHistory }) });
-    document.getElementById(loadId).remove();
-    if (r.ok) {
-      messages.innerHTML += `<div style="align-self:flex-start;max-width:80%;background:var(--card);border:1px solid var(--border);padding:.5rem .8rem;border-radius:10px 10px 10px 2px;font-size:.85rem;white-space:pre-wrap">${escHtml(r.reply)}</div>`;
-      chatHistory.push({ role: 'user', content: msg }, { role: 'assistant', content: r.reply });
-      document.getElementById('chat-model').textContent = `${r.model} · ${r.tokens} tokens · ${r.latencyMs}ms`;
-    } else {
-      messages.innerHTML += `<div style="align-self:flex-start;color:var(--red);font-size:.82rem">✗ ${escHtml(r.error)}</div>`;
+    const response = await fetch(API + '/api/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, history: chatHistory }),
+      signal: chatAbortController.signal
+    });
+
+    if (!response.ok) {
+      throw new Error('HTTP ' + response.status);
     }
+
+    // Remove typing indicator and create assistant message div
+    const typingEl = document.getElementById('chat-typing');
+    if (typingEl) typingEl.remove();
+    assistantDiv = appendChatMsg('assistant', '<span class="spinner"></span>');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // Keep incomplete line in buffer
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith('data:')) continue;
+        const dataStr = trimmed.slice(5).trim();
+        if (dataStr === '[DONE]') continue;
+
+        try {
+          const data = JSON.parse(dataStr);
+          if (data.type === 'model') {
+            model = data.model;
+          } else if (data.type === 'delta') {
+            fullText += data.text;
+            assistantDiv.innerHTML = renderMarkdown(fullText);
+            document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+          } else if (data.type === 'done') {
+            tokens = data.tokens || 0;
+            latencyMs = data.latencyMs || 0;
+          } else if (data.type === 'error') {
+            throw new Error(data.error);
+          }
+        } catch (parseErr) {
+          // Skip non-JSON lines
+          if (parseErr.message && !parseErr.message.includes('Unexpected token')) throw parseErr;
+        }
+      }
+    }
+
+    // Final render
+    if (assistantDiv && fullText) {
+      assistantDiv.innerHTML = renderMarkdown(fullText);
+      if (model || tokens || latencyMs) {
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'chat-meta';
+        const parts = [];
+        if (model) parts.push(model);
+        if (tokens) parts.push(tokens + ' tokens');
+        if (latencyMs) parts.push(latencyMs + 'ms');
+        metaDiv.textContent = parts.join(' · ');
+        assistantDiv.appendChild(metaDiv);
+      }
+    }
+
+    // Update history
+    chatHistory.push({ role: 'user', content: msg });
+    if (fullText) chatHistory.push({ role: 'assistant', content: fullText });
+
+    // Update header
+    if (model) {
+      document.getElementById('chat-model').textContent = `${model}` + (tokens ? ` · ${tokens} tokens` : '') + (latencyMs ? ` · ${latencyMs}ms` : '');
+    }
+
   } catch (e) {
-    document.getElementById(loadId)?.remove();
-    messages.innerHTML += `<div style="align-self:flex-start;color:var(--red);font-size:.82rem">✗ ${escHtml(e.message)}</div>`;
+    if (e.name === 'AbortError') return;
+    const typingEl = document.getElementById('chat-typing');
+    if (typingEl) typingEl.remove();
+    if (assistantDiv && fullText) {
+      assistantDiv.innerHTML = renderMarkdown(fullText);
+    } else if (!assistantDiv) {
+      appendChatMsg('chat-error', '✗ ' + escHtml(e.message));
+    }
   }
+
   btn.disabled = false;
-  messages.scrollTop = messages.scrollHeight;
+  document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
 }
-function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 // ── Usage ──
 async function loadUsage() {
@@ -522,7 +799,109 @@ async function loadUsage() {
 async function resetUsage() {
   if (!confirm('确定清零所有用量记录？')) return;
   await api('/api/usage/reset', { method: 'POST' });
-  loadUsage(); toast('✓ 已清零');
+  loadUsage(); toast('已清零');
+}
+
+// ── Plugins ──
+async function loadPlugins() {
+  const content = document.getElementById('plugins-content');
+  content.innerHTML = '<div style="color:var(--dim);font-size:.82rem">加载中...</div>';
+  try {
+    const data = await api('/api/plugins');
+    const entries = data.entries || {};
+    const keys = Object.keys(entries);
+    if (!keys.length) {
+      content.innerHTML = '<div class="info-card" style="text-align:center;color:var(--dim)">暂无插件</div>';
+      return;
+    }
+    content.innerHTML = keys.map(id => {
+      const plug = entries[id] || {};
+      const enabled = plug.enabled !== undefined ? plug.enabled : (data.enabled || []).includes(id);
+      return `<div class="plugin-item" id="plugin-${id}">
+        <div class="plugin-info">
+          <div class="plugin-name">${escHtml(plug.name || id)}</div>
+          <div class="plugin-desc">${escHtml(plug.description || plug.desc || id)}</div>
+        </div>
+        <label class="toggle-wrap">
+          <input type="checkbox" ${enabled ? 'checked' : ''} onchange="togglePlugin('${id}', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    content.innerHTML = `<div class="info-card" style="color:var(--red)">加载失败: ${escHtml(e.message)}</div>`;
+  }
+}
+
+async function togglePlugin(id, enabled) {
+  try {
+    const r = await api(`/api/plugins/${encodeURIComponent(id)}/toggle`, {
+      method: 'PUT', body: JSON.stringify({ enabled })
+    });
+    toast(`${enabled ? '已启用' : '已禁用'}: ${id}`);
+  } catch (e) {
+    toast('切换失败: ' + e.message, 'err');
+    // Revert toggle
+    loadPlugins();
+  }
+}
+
+// ── Agents ──
+async function loadAgents() {
+  const content = document.getElementById('agents-content');
+  content.innerHTML = '<div style="color:var(--dim);font-size:.82rem">加载中...</div>';
+  try {
+    const agents = await api('/api/agents');
+    if (!agents.length) {
+      content.innerHTML = '<div class="info-card" style="text-align:center;color:var(--dim)">暂无 Agent</div>';
+      return;
+    }
+
+    // Build model options from providers
+    const modelOptions = [];
+    providers.forEach(p => {
+      (p.models || []).forEach(m => {
+        const fullId = p.id + '/' + m.id;
+        modelOptions.push({ fullId, label: (p.nameZh || p.name) + ' / ' + m.name });
+      });
+    });
+
+    content.innerHTML = agents.map(agent => {
+      const currentModel = agent.primaryModel || '';
+      const selectHtml = modelOptions.length
+        ? `<select class="agent-model-select" onchange="setAgentModel('${agent.id}', this.value)">
+            <option value="">-- 选择模型 --</option>
+            ${modelOptions.map(o => `<option value="${escHtml(o.fullId)}" ${o.fullId === currentModel ? 'selected' : ''}>${escHtml(o.label)}</option>`).join('')}
+           </select>`
+        : '<span style="font-size:.75rem;color:var(--dim)">请先添加提供商</span>';
+
+      return `<div class="agent-item">
+        <div style="width:36px;height:36px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">🤖</div>
+        <div class="agent-info">
+          <div class="agent-name">${escHtml(agent.name || agent.id)}</div>
+          <div class="agent-meta">
+            ${agent.workspace ? '工作区: ' + escHtml(agent.workspace) : ''}
+            ${currentModel ? ' · 当前模型: ' + escHtml(currentModel) : ' · 未设置模型'}
+          </div>
+        </div>
+        ${selectHtml}
+      </div>`;
+    }).join('');
+  } catch (e) {
+    content.innerHTML = `<div class="info-card" style="color:var(--red)">加载失败: ${escHtml(e.message)}</div>`;
+  }
+}
+
+async function setAgentModel(agentId, fullId) {
+  if (!fullId) return;
+  try {
+    await api(`/api/agents/${encodeURIComponent(agentId)}/model`, {
+      method: 'PUT', body: JSON.stringify({ fullId })
+    });
+    toast(`Agent 模型已更新: ${fullId}`);
+  } catch (e) {
+    toast('设置失败: ' + e.message, 'err');
+  }
 }
 
 // ── Export/Import ──
@@ -549,18 +928,6 @@ async function importConfig(input) {
   } catch (e) { document.getElementById('sync-result').innerHTML = `<span style="color:var(--red)">✗ ${e.message}</span>`; }
   input.value = '';
 }
-
-// ── Page switch hooks ──
-document.querySelectorAll('.nav-item').forEach(el => {
-  const orig = el.onclick;
-  el.addEventListener('click', () => {
-    if (el.dataset.page === 'usage') loadUsage();
-    if (el.dataset.page === 'chat') {
-      const cur = providers.find(p => p.isCurrent);
-      document.getElementById('chat-model').textContent = cur ? `${cur.nameZh||cur.name} · ${cur.selectedModel||cur.models?.[0]?.id||''}` : '';
-    }
-  });
-});
 
 // ── Init ──
 checkSetup();
