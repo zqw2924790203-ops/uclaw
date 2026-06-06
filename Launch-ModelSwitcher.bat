@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul 2>&1
-title UClaW - 控制面板 + Gateway
+title UClaW - Control Panel
 
 rem === Resolve script directory ===
 set "UCRAW_ROOT=%~dp0"
@@ -15,72 +15,55 @@ if not exist "%TMPDIR%" mkdir "%TMPDIR%"
 
 echo.
 echo   ================================
-echo    UClaW 控制面板 + Gateway
-echo    v2026.6.1
+echo    UClaW Control Panel v1.0.0
 echo   ================================
 echo.
 
 rem === Check Node.js ===
-echo [1/4] Checking Node.js...
 node --version >nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Node.js not found
+    echo  [ERROR] Node.js not found. Run setup.bat first.
     pause
     exit /b 1
 )
-for /f "tokens=*" %%v in ('node --version') do echo       %%v OK
+for /f "tokens=*" %%v in ('node --version') do echo  Node.js %%v OK
 
 rem === Check OpenClaw ===
-echo [2/4] Checking OpenClaw...
 set "OPENCLAW_ENTRY=%UCRAW_ROOT%\bin\openclaw\node_modules\openclaw\dist\index.js"
 if not exist "%OPENCLAW_ENTRY%" (
-    echo [ERROR] OpenClaw not found
+    echo  [ERROR] OpenClaw not found. Run setup.bat first.
     pause
     exit /b 1
 )
-echo       OpenClaw 2026.6.1 OK
+echo  OpenClaw OK
 
-rem === Start Gateway in background ===
-echo [3/4] Starting Gateway on port %OPENCLAW_GATEWAY_PORT%...
-start "UClaW Gateway" /min node "%OPENCLAW_ENTRY%" gateway --port %OPENCLAW_GATEWAY_PORT%
-
-rem === Start Config Server in background ===
-echo [4/4] Starting Config Panel on port %UCLAW_CONFIG_PORT%...
-start "UClaW Config" /min node "%UCRAW_ROOT%\bin\config-server.js"
-
-rem === Wait for config server to be ready ===
+rem === Start Config Server (it manages the Gateway) ===
 echo.
-echo  Waiting for services to start...
+echo  Starting Control Panel...
+echo  Panel:   http://localhost:%UCLAW_CONFIG_PORT%
+echo  Gateway: http://localhost:%OPENCLAW_GATEWAY_PORT% (auto-start)
+echo.
+echo  The browser will open automatically.
+echo  Press Ctrl+C to stop all services.
+echo  ========================================
+echo.
+
+rem === Start config server in background, open browser ===
+start "UClaW Panel" /min node "%UCRAW_ROOT%\bin\config-server.js"
+
+rem === Wait for panel to be ready ===
 set "RETRY=0"
 :wait_loop
 timeout /t 2 /nobreak >nul
 set /a RETRY+=1
-if %RETRY% gtr 15 (
-    echo  [WARN] Services taking too long. Opening browser anyway...
-    goto :open_browser
-)
+if %RETRY% gtr 15 goto :open_browser
 node -e "fetch('http://localhost:%UCLAW_CONFIG_PORT%/').then(r=>process.exit(0)).catch(()=>process.exit(1))" >nul 2>&1
 if errorlevel 1 goto :wait_loop
 
 :open_browser
-echo.
-echo  ========================================
-echo   Config Panel:  http://localhost:%UCLAW_CONFIG_PORT%
-echo   Gateway:       http://localhost:%OPENCLAW_GATEWAY_PORT%
-echo   Data Dir:      %OPENCLAW_STATE_DIR%
-echo  ========================================
-echo.
-echo  Opening control panel in browser...
 start "" "http://localhost:%UCLAW_CONFIG_PORT%/"
-echo.
-echo  Press any key to STOP all services.
-echo  ========================================
-pause >nul
 
-rem === Stop all services ===
-echo.
-echo  Stopping services...
-taskkill /FI "WINDOWTITLE eq UClaW Gateway" /F >nul 2>&1
-taskkill /FI "WINDOWTITLE eq UClaW Config" /F >nul 2>&1
-echo  All services stopped.
-pause
+rem === Keep window open, wait for Ctrl+C ===
+:keep_alive
+timeout /t 5 /nobreak >nul
+goto :keep_alive

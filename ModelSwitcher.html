@@ -24,72 +24,53 @@
   .nav-item.active{color:var(--accent);background:rgba(79,156,247,.06);border-left-color:var(--accent)}
   .sidebar .version{padding:.75rem 1rem;font-size:.7rem;color:var(--dim);border-top:1px solid var(--border)}
   .main{flex:1;overflow-y:auto;padding:1.5rem 2rem}
-  .page-title{font-size:1.15rem;font-weight:600;margin-bottom:1.25rem;display:flex;
-    align-items:center;justify-content:space-between}
-  .status-chip{display:inline-flex;align-items:center;gap:.35rem;padding:3px 10px;
-    border-radius:20px;font-size:.72rem;font-weight:500}
+  .page-title{font-size:1.15rem;font-weight:600;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
+  .status-chip{display:inline-flex;align-items:center;gap:.35rem;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:500;cursor:default}
   .status-chip.ok{background:rgba(52,211,153,.1);color:var(--green)}
   .status-chip.err{background:rgba(248,113,113,.1);color:var(--red)}
+  .status-chip.warn{background:rgba(251,191,36,.1);color:var(--yellow)}
   .dot{width:6px;height:6px;border-radius:50%}
-  .dot.ok{background:var(--green)}.dot.err{background:var(--red)}
+  .dot.ok{background:var(--green)}.dot.err{background:var(--red)}.dot.warn{background:var(--yellow)}
 
-  /* Provider card */
   .provider-grid{display:flex;flex-direction:column;gap:.65rem}
-  .provider-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-    transition:all .2s;overflow:hidden}
+  .provider-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);transition:all .2s;overflow:hidden;position:relative}
   .provider-card:hover{border-color:#444}
   .provider-card.active{border-color:var(--green)}
+  .provider-card.active::before{content:'';display:block;width:3px;height:100%;position:absolute;left:0;top:0;background:var(--green);border-radius:var(--radius) 0 0 var(--radius)}
   .p-header{display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;cursor:pointer}
-  .provider-card.active .p-header{padding-left:calc(1rem + 3px)}
-  .provider-card.active::before{content:'';display:block;width:3px;height:100%;position:absolute;
-    left:0;top:0;background:var(--green);border-radius:var(--radius) 0 0 var(--radius)}
-  .provider-card{position:relative}
-  .p-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;
-    justify-content:center;font-size:1rem;font-weight:700;color:#fff;flex-shrink:0}
+  .p-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff;flex-shrink:0}
   .p-info{flex:1;min-width:0}
   .p-name{font-weight:600;font-size:.9rem;display:flex;align-items:center;gap:.5rem}
   .p-name .cat{font-size:.65rem;padding:1px 6px;border-radius:8px;background:var(--border);color:var(--dim);font-weight:400}
   .p-name .cat.cn{background:rgba(248,113,113,.12);color:#fca5a5}
   .p-name .cat.proxy{background:rgba(251,191,36,.12);color:#fcd34d}
   .p-name .cat.official{background:rgba(79,156,247,.12);color:#93c5fd}
-  .p-url{font-size:.72rem;color:var(--dim);font-family:'SF Mono',Consolas,monospace;
-    margin-top:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .p-url{font-size:.72rem;color:var(--dim);font-family:'SF Mono',Consolas,monospace;margin-top:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .p-right{display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;flex-shrink:0}
   .p-badge{font-size:.65rem;padding:2px 8px;border-radius:10px;font-weight:500}
   .p-badge.active{background:rgba(52,211,153,.15);color:var(--green)}
-  .p-badge.key-ok{color:var(--green)}.p-badge.key-miss{color:var(--red)}
 
-  /* Expand panel */
   .p-body{display:none;padding:0 1rem 1rem;border-top:1px solid var(--border)}
   .p-body.open{display:block;padding-top:.85rem}
   .p-section{margin-bottom:.85rem}
-  .p-section-title{font-size:.72rem;color:var(--dim);text-transform:uppercase;
-    letter-spacing:.05em;margin-bottom:.4rem}
+  .p-section-title{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem}
   .p-row{display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem}
   .p-row label{font-size:.75rem;color:var(--dim);width:65px;flex-shrink:0;text-align:right}
-  .p-row input,.p-row select{flex:1;background:var(--bg);border:1px solid var(--border);
-    border-radius:6px;color:var(--text);padding:.35rem .55rem;font-size:.78rem;outline:none;font-family:inherit}
+  .p-row input,.p-row select{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.35rem .55rem;font-size:.78rem;outline:none;font-family:inherit}
   .p-row input:focus,.p-row select:focus{border-color:var(--accent)}
-  .p-row .val{font-size:.78rem;color:var(--dim);font-family:monospace;word-break:break-all}
 
-  /* Model chips */
   .model-chips{display:flex;flex-wrap:wrap;gap:.35rem}
-  .model-chip{display:flex;align-items:center;gap:.4rem;padding:.3rem .65rem;
-    border:1px solid var(--border);border-radius:8px;font-size:.75rem;cursor:pointer;
-    transition:all .15s;background:var(--bg)}
+  .model-chip{display:flex;align-items:center;gap:.4rem;padding:.3rem .65rem;border:1px solid var(--border);border-radius:8px;font-size:.75rem;cursor:pointer;transition:all .15s;background:var(--bg)}
   .model-chip:hover{border-color:var(--accent);background:rgba(79,156,247,.06)}
   .model-chip.selected{border-color:var(--accent);background:rgba(79,156,247,.12);color:var(--accent)}
   .model-chip .tag{font-size:.6rem;padding:1px 5px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--dim)}
   .model-chip .tag.free{background:rgba(52,211,153,.1);color:var(--green)}
   .model-chip .tag.reasoning{background:rgba(251,191,36,.1);color:var(--yellow)}
 
-  /* Action bar inside card */
   .p-actions{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-top:.6rem}
   .p-actions .test-result{font-size:.72rem;margin-left:auto;display:flex;align-items:center;gap:.3rem}
 
-  /* Buttons */
-  .btn{padding:.35rem .7rem;border-radius:6px;border:1px solid var(--border);background:var(--card);
-    color:var(--text);cursor:pointer;font-size:.75rem;transition:all .15s;font-family:inherit}
+  .btn{padding:.35rem .7rem;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.75rem;transition:all .15s;font-family:inherit}
   .btn:hover{border-color:var(--accent);background:var(--card-hover)}
   .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn-primary:hover{background:#6aabff}
@@ -101,44 +82,77 @@
   .btn-green{color:var(--green);border-color:rgba(52,211,153,.3)}
   .btn-green:hover{background:rgba(52,211,153,.08)}
   .btn:disabled{opacity:.4;cursor:not-allowed}
-  .spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--dim);
-    border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+  .spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--dim);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  .add-card{border-style:dashed;text-align:center;padding:1rem;color:var(--dim);
-    cursor:pointer;transition:all .15s;border-radius:var(--radius)}
+  .add-card{border-style:dashed;text-align:center;padding:1rem;color:var(--dim);cursor:pointer;transition:all .15s;border-radius:var(--radius)}
   .add-card:hover{border-color:var(--accent);color:var(--accent)}
 
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:50;display:none;
-    align-items:center;justify-content:center}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:50;display:none;align-items:center;justify-content:center}
   .modal-bg.open{display:flex}
-  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;
-    padding:1.25rem;width:480px;max-width:92vw}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;width:480px;max-width:92vw}
   .modal h3{font-size:.95rem;margin-bottom:1rem}
   .modal .form-row{margin-bottom:.8rem}
   .modal .form-label{display:block;font-size:.75rem;color:var(--dim);margin-bottom:.25rem}
-  .modal input,.modal select{width:100%;background:var(--bg);border:1px solid var(--border);
-    border-radius:6px;color:var(--text);padding:.45rem .6rem;font-size:.8rem;outline:none;font-family:inherit}
+  .modal input,.modal select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.45rem .6rem;font-size:.8rem;outline:none;font-family:inherit}
   .modal .btn-group{display:flex;gap:.4rem;justify-content:flex-end;margin-top:1rem}
 
-  .toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:.6rem 1rem;background:var(--surface);
-    border:1px solid var(--green);border-radius:8px;color:var(--green);font-size:.8rem;
-    opacity:0;transition:opacity .25s;pointer-events:none;z-index:100}
-  .toast.show{opacity:1}.toast.err{border-color:var(--red);color:var(--red)}
+  .toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:.6rem 1rem;background:var(--surface);border:1px solid var(--green);border-radius:8px;color:var(--green);font-size:.8rem;opacity:0;transition:opacity .25s;pointer-events:none;z-index:100}
+  .toast.show{opacity:1}.toast.err{border-color:var(--red);color:var(--red)}.toast.warn{border-color:var(--yellow);color:var(--yellow)}
   .page{display:none}.page.active{display:block}
   .info-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:.75rem}
   .info-row{display:flex;justify-content:space-between;padding:.25rem 0;font-size:.8rem}
   .info-row .label{color:var(--dim)}
+
+  /* Gateway panel */
+  .gw-bar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+  .gw-logs{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.5rem .75rem;font-family:'SF Mono',Consolas,monospace;font-size:.7rem;color:var(--dim);max-height:200px;overflow-y:auto;line-height:1.6;margin-top:.75rem;white-space:pre-wrap;word-break:break-all}
+
+  /* Setup wizard */
+  .setup-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center}
+  .setup-overlay.hidden{display:none}
+  .setup-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:500px;max-width:92vw}
+  .setup-card h2{font-size:1.2rem;margin-bottom:.3rem}
+  .setup-card .subtitle{color:var(--dim);font-size:.85rem;margin-bottom:1.5rem}
+  .setup-card .step{margin-bottom:1.25rem}
+  .setup-card .step-title{font-weight:600;font-size:.9rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+  .setup-card .step-title .num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+  .setup-card input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.5rem .75rem;font-size:.85rem;outline:none}
+  .setup-card input:focus{border-color:var(--accent)}
+  .setup-card .form-help{font-size:.72rem;color:var(--dim);margin-top:.25rem}
+  .sep{border:none;border-top:1px solid var(--border);margin:1rem 0}
 </style>
 </head>
 <body>
+
+<!-- Setup Wizard (shown on first run) -->
+<div class="setup-overlay hidden" id="setupWizard">
+  <div class="setup-card">
+    <h2>⚡ 欢迎使用 UClaW</h2>
+    <p class="subtitle">便携版 OpenClaw Gateway — 首次配置</p>
+    <div class="step">
+      <div class="step-title"><span class="num">1</span> 配置 DeepSeek API Key</div>
+      <input id="setup-key" type="password" placeholder="sk-...">
+      <div class="form-help">在 <a href="https://platform.deepseek.com" target="_blank" style="color:var(--accent)">platform.deepseek.com</a> 获取 API Key（免费）</div>
+    </div>
+    <div class="step">
+      <div class="step-title"><span class="num">2</span> 选择默认模型</div>
+      <select id="setup-model" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.5rem;font-size:.85rem;">
+        <option value="deepseek-v4-pro">DeepSeek V4 Pro（推荐）</option>
+        <option value="deepseek-v4-flash">DeepSeek V4 Flash（更快）</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:.6rem;font-size:.9rem;" onclick="doSetup()">🚀 启动 UClaW</button>
+  </div>
+</div>
+
 <div class="app">
   <aside class="sidebar">
     <div class="brand">⚡ <span>UClaW</span></div>
     <nav>
       <div class="nav-item active" data-page="switch">🔄 模型切换</div>
-      <div class="nav-item" data-page="add">➕ 添加提供商</div>
       <div class="nav-item" data-page="gateway">🌐 Gateway</div>
+      <div class="nav-item" data-page="add">➕ 添加提供商</div>
     </nav>
     <div class="version">OpenClaw v2026.6.1 · v1.0.0</div>
   </aside>
@@ -153,31 +167,39 @@
       <div class="provider-grid" id="providerGrid"></div>
     </div>
 
+    <!-- Gateway Page -->
+    <div id="page-gateway" class="page">
+      <div class="page-title">Gateway 管理</div>
+      <div class="info-card">
+        <div class="info-row"><span class="label">状态</span><span id="gw-status">-</span></div>
+        <div class="info-row"><span class="label">端口</span><span id="gw-port">-</span></div>
+        <div class="info-row"><span class="label">PID</span><span id="gw-pid">-</span></div>
+        <div class="info-row"><span class="label">运行时间</span><span id="gw-uptime">-</span></div>
+        <hr class="sep">
+        <div class="gw-bar">
+          <button class="btn btn-green" onclick="gwAction('start')">▶ 启动</button>
+          <button class="btn btn-danger" onclick="gwAction('stop')">■ 停止</button>
+          <button class="btn" onclick="gwAction('restart')">🔄 重启</button>
+          <a class="btn" id="gw-console-link" href="http://localhost:18789/" target="_blank">🎛️ OpenClaw 控制台</a>
+          <span id="gw-action-status" style="font-size:.72rem;color:var(--dim);margin-left:.5rem;"></span>
+        </div>
+        <div class="gw-logs" id="gw-logs">等待日志...</div>
+      </div>
+    </div>
+
     <!-- Add Provider Page -->
     <div id="page-add" class="page">
       <div class="page-title">添加提供商</div>
       <div class="info-card">
-        <div class="p-row"><label>提供商 ID</label><input id="n-id" placeholder="my-provider"></div>
-        <div class="p-row"><label>显示名称</label><input id="n-name" placeholder="My Provider"></div>
-        <div class="p-row"><label>分类</label>
-          <select id="n-cat"><option value="cn_official">国内官方</option><option value="official">国际官方</option><option value="proxy">中转代理</option><option value="custom">自定义</option></select></div>
-        <div class="p-row"><label>API URL</label><input id="n-url" placeholder="https://api.example.com/v1"></div>
-        <div class="p-row"><label>API 类型</label>
-          <select id="n-api"><option value="openai-completions">OpenAI Completions</option><option value="openai-responses">OpenAI Responses</option><option value="openai-chatgpt-responses">ChatGPT Responses</option><option value="anthropic-messages">Anthropic Messages</option></select></div>
-        <div class="p-row"><label>API Key</label><input id="n-key" type="password" placeholder="sk-..."></div>
-        <div class="p-row"><label>模型 ID</label><input id="n-mid" placeholder="gpt-4o"></div>
-        <div class="p-row"><label>模型名称</label><input id="n-mname" placeholder="GPT-4o"></div>
-        <div style="margin-top:.8rem"><button class="btn btn-primary" onclick="addProvider()">添加提供商</button></div>
-      </div>
-    </div>
-
-    <!-- Gateway Page -->
-    <div id="page-gateway" class="page">
-      <div class="page-title">Gateway 状态</div>
-      <div class="info-card" id="gwInfo">加载中...</div>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
-        <a class="btn" id="gwLink" href="http://localhost:18789/" target="_blank">🎛️ OpenClaw 控制台</a>
-        <button class="btn" onclick="location.reload()">🔄 刷新面板</button>
+        <div class="p-row"><label>ID</label><input id="n-id" placeholder="my-provider"></div>
+        <div class="p-row"><label>名称</label><input id="n-name" placeholder="My Provider"></div>
+        <div class="p-row"><label>分类</label><select id="n-cat"><option value="cn_official">国内官方</option><option value="official">国际官方</option><option value="proxy">中转代理</option><option value="custom">自定义</option></select></div>
+        <div class="p-row"><label>URL</label><input id="n-url" placeholder="https://api.example.com/v1"></div>
+        <div class="p-row"><label>API</label><select id="n-api"><option value="openai-completions">OpenAI Completions</option><option value="openai-responses">OpenAI Responses</option><option value="openai-chatgpt-responses">ChatGPT Responses</option><option value="anthropic-messages">Anthropic Messages</option></select></div>
+        <div class="p-row"><label>Key</label><input id="n-key" type="password" placeholder="sk-..."></div>
+        <div class="p-row"><label>模型</label><input id="n-mid" placeholder="gpt-4o"></div>
+        <div class="p-row"><label>名称</label><input id="n-mname" placeholder="GPT-4o"></div>
+        <div style="margin-top:.8rem"><button class="btn btn-primary" onclick="addProvider()">添加</button></div>
       </div>
     </div>
   </div>
@@ -187,7 +209,7 @@
 
 <script>
 const API = location.origin;
-let providers = [], expandedId = null;
+let providers = [], expandedId = null, gwPollTimer = null;
 
 // ── Nav ──
 document.querySelectorAll('.nav-item').forEach(el => el.onclick = () => {
@@ -197,34 +219,89 @@ document.querySelectorAll('.nav-item').forEach(el => el.onclick = () => {
   document.getElementById('page-' + el.dataset.page).classList.add('active');
 });
 
-// ── Helpers ──
 async function api(path, opts = {}) {
   const r = await fetch(API + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
   return r.json();
 }
-function toast(msg, isErr = false) {
+function toast(msg, isErr = false, isWarn = false) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show' + (isErr ? ' err' : '');
-  setTimeout(() => t.className = 'toast', 3500);
+  t.textContent = msg; t.className = 'toast show' + (isErr ? ' err' : isWarn ? ' warn' : '');
+  setTimeout(() => t.className = 'toast', 4000);
 }
 const catLabel = c => ({official:'官方',cn_official:'国内',proxy:'中转',custom:'自定义',international:'国际'})[c]||c;
 const catClass = c => ({official:'official',cn_official:'cn',proxy:'proxy'})[c]||'';
 
+// ── First Run Setup ──
+async function checkSetup() {
+  try {
+    const s = await api('/api/setup/status');
+    if (s.needsSetup) {
+      document.getElementById('setupWizard').classList.remove('hidden');
+    }
+  } catch {}
+}
+async function doSetup() {
+  const key = document.getElementById('setup-key').value.trim();
+  if (!key) { toast('请输入 API Key', true); return; }
+  try {
+    await api('/api/setup/init', { method: 'POST', body: JSON.stringify({ apiKey: key }) });
+    // Set selected model
+    const model = document.getElementById('setup-model').value;
+    await api('/api/providers/deepseek/switch', { method: 'PUT', body: JSON.stringify({ modelId: model }) });
+    document.getElementById('setupWizard').classList.add('hidden');
+    toast('✓ 配置完成，正在启动 Gateway...');
+    await api('/api/gateway/start', { method: 'POST' });
+    loadProviders();
+    startGwPoll();
+  } catch (e) { toast('配置失败: ' + e.message, true); }
+}
+
 // ── Gateway ──
 async function checkGateway() {
   const chip = document.getElementById('gwChip');
-  const info = document.getElementById('gwInfo');
   try {
     const d = await api('/api/gateway');
-    chip.innerHTML = `<span class="status-chip ${d.online?'ok':'err'}"><span class="dot ${d.online?'ok':'err'}"></span>${d.online?'Gateway 在线':'Gateway 离线'}</span>`;
-    info.innerHTML = `<div class="info-row"><span class="label">状态</span><span style="color:${d.online?'var(--green)':'var(--red)'}">${d.online?'● 在线':'● 离线'}</span></div>
-      <div class="info-row"><span class="label">端口</span><span>${d.port}</span></div>
-      <div style="margin-top:.75rem"><a class="btn btn-sm" href="http://localhost:${d.port}/" target="_blank">打开控制台 →</a></div>`;
-    document.getElementById('gwLink').href = `http://localhost:${d.port}/`;
-  } catch { chip.innerHTML = '<span class="status-chip err"><span class="dot err"></span>面板离线</span>'; }
+    const online = d.online || d.status === 'running';
+    chip.innerHTML = `<span class="status-chip ${online?'ok':'err'}"><span class="dot ${online?'ok':'err'}"></span>${online?'Gateway 在线':'Gateway 离线'}</span>`;
+    // Update gateway page
+    const statusMap = { stopped: '● 已停止', starting: '● 启动中...', running: '● 运行中', error: '● 错误' };
+    document.getElementById('gw-status').innerHTML = `<span style="color:${d.status==='running'?'var(--green)':d.status==='starting'?'var(--yellow)':'var(--red)'}">${statusMap[d.status]||d.status}</span>`;
+    document.getElementById('gw-port').textContent = d.port;
+    document.getElementById('gw-pid').textContent = d.pid || '-';
+    document.getElementById('gw-uptime').textContent = d.uptime > 0 ? formatUptime(d.uptime) : '-';
+    document.getElementById('gw-console-link').href = `http://localhost:${d.port}/`;
+    if (d.logs?.length) document.getElementById('gw-logs').textContent = d.logs.join('\n');
+  } catch {
+    chip.innerHTML = '<span class="status-chip err"><span class="dot err"></span>面板离线</span>';
+  }
+}
+function formatUptime(s) {
+  if (s < 60) return s + '秒';
+  if (s < 3600) return Math.floor(s/60) + '分' + (s%60) + '秒';
+  return Math.floor(s/3600) + '时' + Math.floor((s%3600)/60) + '分';
+}
+async function gwAction(action) {
+  const status = document.getElementById('gw-action-status');
+  status.textContent = '执行中...'; status.style.color = 'var(--yellow)';
+  try {
+    const r = await api(`/api/gateway/${action}`, { method: 'POST' });
+    status.textContent = r.ok ? '✓ ' + action : '✗ ' + (r.error||'');
+    status.style.color = r.ok ? 'var(--green)' : 'var(--red)';
+    // Poll for status change
+    setTimeout(checkGateway, 2000);
+    if (action === 'restart') { setTimeout(checkGateway, 5000); setTimeout(checkGateway, 8000); }
+  } catch (e) {
+    status.textContent = '✗ ' + e.message; status.style.color = 'var(--red)';
+  }
+  setTimeout(() => { status.textContent = ''; }, 5000);
+}
+function startGwPoll() {
+  if (gwPollTimer) return;
+  checkGateway();
+  gwPollTimer = setInterval(checkGateway, 5000);
 }
 
-// ── Load ──
+// ── Providers ──
 async function loadProviders() {
   providers = await api('/api/providers');
   renderGrid();
@@ -236,19 +313,10 @@ function renderGrid() {
     const active = p.isCurrent;
     const expanded = expandedId === p.id;
     const selected = p.selectedModel || p.models?.[0]?.id;
-
-    // Model chips
     const chips = (p.models||[]).map(m => {
       const tags = (m.tags||[]).map(t => `<span class="tag ${t==='免费'?'free':t==='推理'?'reasoning':''}">${t}</span>`).join('');
-      const sel = m.id === selected;
-      return `<div class="model-chip ${sel?'selected':''}" data-pid="${p.id}" data-mid="${m.id}" onclick="selectModel('${p.id}','${m.id}')">${m.name} ${tags}</div>`;
+      return `<div class="model-chip ${m.id===selected?'selected':''}" data-pid="${p.id}" data-mid="${m.id}" onclick="selectModel('${p.id}','${m.id}')">${m.name} ${tags}</div>`;
     }).join('');
-
-    // Key status
-    const keyStatus = p.hasKey
-      ? `<span style="color:var(--green);font-size:.72rem">● 已配置</span>`
-      : `<span style="color:var(--red);font-size:.72rem">● 未配置</span>`;
-
     return `<div class="provider-card ${active?'active':''}">
       <div class="p-header" onclick="toggleExpand('${p.id}')">
         <div class="p-icon" style="background:${p.iconColor||'#666'}">${(p.name||p.id).charAt(0).toUpperCase()}</div>
@@ -258,7 +326,7 @@ function renderGrid() {
         </div>
         <div class="p-right">
           ${active?'<span class="p-badge active">✓ 当前</span>':''}
-          ${keyStatus}
+          <span style="font-size:.68rem;color:${p.hasKey?'var(--green)':'var(--red)'}">${p.hasKey?'● Key 已配':'● 缺 Key'}</span>
         </div>
       </div>
       <div class="p-body ${expanded?'open':''}" id="body-${p.id}">
@@ -268,10 +336,7 @@ function renderGrid() {
         </div>
         <div class="p-section">
           <div class="p-section-title">API Key</div>
-          <div class="p-row">
-            <input type="password" id="key-${p.id}" placeholder="${p.apiKey||'sk-...'}" value="">
-            <button class="btn btn-sm" onclick="saveKey('${p.id}')">保存</button>
-          </div>
+          <div class="p-row"><input type="password" id="key-${p.id}" placeholder="${p.apiKey||'sk-...'}" value=""><button class="btn btn-sm" onclick="saveKey('${p.id}')">保存</button></div>
         </div>
         <div class="p-actions">
           <button class="btn btn-primary btn-sm" onclick="doSwitch('${p.id}','${p.nameZh||p.name}')">切换到此提供商</button>
@@ -284,111 +349,81 @@ function renderGrid() {
   }).join('') + `<div class="add-card" onclick="document.querySelector('[data-page=add]').click()">➕ 添加新的模型提供商</div>`;
 }
 
-// ── Toggle expand ──
 function toggleExpand(id) {
   expandedId = expandedId === id ? null : id;
   document.querySelectorAll('.p-body').forEach(el => el.classList.remove('open'));
-  if (expandedId) {
-    const body = document.getElementById('body-' + id);
-    if (body) body.classList.add('open');
-  }
+  if (expandedId) document.getElementById('body-' + id)?.classList.add('open');
 }
 
-// ── Select model within provider ──
 function selectModel(pid, mid) {
   const p = providers.find(x => x.id === pid);
   if (p) p.selectedModel = mid;
-  // Update UI chips
-  document.querySelectorAll(`.model-chip[data-pid="${pid}"]`).forEach(el => {
-    el.classList.toggle('selected', el.dataset.mid === mid);
-  });
-  // Save to server
-  api(`/api/providers/${encodeURIComponent(pid)}`, {
-    method: 'PATCH', body: JSON.stringify({ selectedModel: mid })
-  });
+  document.querySelectorAll(`.model-chip[data-pid="${pid}"]`).forEach(el => el.classList.toggle('selected', el.dataset.mid === mid));
+  api(`/api/providers/${encodeURIComponent(pid)}`, { method: 'PATCH', body: JSON.stringify({ selectedModel: mid }) });
 }
 
-// ── Switch ──
 async function doSwitch(id, name) {
   const p = providers.find(x => x.id === id);
   const mid = p?.selectedModel || p?.models?.[0]?.id;
-  if (!p?.hasKey) {
-    if (!confirm(`${name} 尚未配置 API Key，确定切换？`)) return;
-  }
+  if (!p?.hasKey && !confirm(`${name} 尚未配置 API Key，确定切换？`)) return;
   try {
-    const r = await api(`/api/providers/${encodeURIComponent(id)}/switch`, {
-      method: 'PUT', body: JSON.stringify({ modelId: mid })
-    });
-    if (r.ok) { toast(`✓ 已切换: ${name} → ${mid}`); loadProviders(); }
-    else toast('失败: ' + (r.error||''), true);
-  } catch(e) { toast('失败: ' + e.message, true); }
+    const r = await api(`/api/providers/${encodeURIComponent(id)}/switch`, { method: 'PUT', body: JSON.stringify({ modelId: mid }) });
+    if (r.ok) {
+      toast(`✓ ${name} → ${mid}${r.restart ? '（Gateway 重启中...）' : ''}`, false, !!r.restart);
+      loadProviders();
+      if (r.restart) { setTimeout(checkGateway, 3000); setTimeout(checkGateway, 6000); }
+    } else toast('失败: '+(r.error||''), true);
+  } catch(e) { toast('失败: '+e.message, true); }
 }
 
-// ── Save Key ──
 async function saveKey(id) {
   const input = document.getElementById('key-' + id);
   const key = input.value.trim();
   if (!key) { toast('请输入 API Key', true); return; }
   try {
-    await api(`/api/providers/${encodeURIComponent(id)}`, {
-      method: 'PATCH', body: JSON.stringify({ apiKey: key })
-    });
-    input.value = '';
-    input.placeholder = key.slice(0,6) + '...' + key.slice(-4);
-    toast('✓ API Key 已保存');
-    loadProviders();
+    await api(`/api/providers/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ apiKey: key }) });
+    input.value = ''; input.placeholder = key.slice(0,6) + '...' + key.slice(-4);
+    toast('✓ API Key 已保存'); loadProviders();
   } catch(e) { toast('保存失败', true); }
 }
 
-// ── Test connection ──
 async function doTest(id) {
   const btn = document.getElementById('testbtn-' + id);
   const result = document.getElementById('testresult-' + id);
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> 测试中';
-  result.innerHTML = '';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 测试中'; result.innerHTML = '';
   try {
     const r = await api(`/api/providers/${encodeURIComponent(id)}/test`, { method: 'POST' });
-    if (r.ok) {
-      result.innerHTML = `<span style="color:var(--green)">✓ ${r.message} (${r.latencyMs}ms)</span>`;
-    } else {
-      result.innerHTML = `<span style="color:var(--red)">✗ ${r.error} (${r.latencyMs||0}ms)</span>`;
-    }
-  } catch(e) {
-    result.innerHTML = `<span style="color:var(--red)">✗ ${e.message}</span>`;
-  }
-  btn.disabled = false;
-  btn.innerHTML = '🔗 连接测试';
+    result.innerHTML = r.ok
+      ? `<span style="color:var(--green)">✓ ${r.message} (${r.latencyMs}ms)</span>`
+      : `<span style="color:var(--red)">✗ ${r.error} (${r.latencyMs||0}ms)</span>`;
+  } catch(e) { result.innerHTML = `<span style="color:var(--red)">✗ ${e.message}</span>`; }
+  btn.disabled = false; btn.innerHTML = '🔗 连接测试';
 }
 
-// ── Add / Delete ──
 async function addProvider() {
   const id = document.getElementById('n-id').value.trim();
   const baseUrl = document.getElementById('n-url').value.trim();
-  if (!id || !baseUrl) return toast('请填写 ID 和 URL', true);
+  if (!id||!baseUrl) return toast('请填写 ID 和 URL', true);
   try {
     await api('/api/providers', { method:'POST', body: JSON.stringify({
-      id, name: document.getElementById('n-name').value||id,
-      category: document.getElementById('n-cat').value,
-      baseUrl, api: document.getElementById('n-api').value,
-      apiKey: document.getElementById('n-key').value,
-      models: [{ id: document.getElementById('n-mid').value||'default',
-                 name: document.getElementById('n-mname').value||'Default', tags:[] }]
+      id, name:document.getElementById('n-name').value||id, category:document.getElementById('n-cat').value,
+      baseUrl, api:document.getElementById('n-api').value, apiKey:document.getElementById('n-key').value,
+      models:[{id:document.getElementById('n-mid').value||'default',name:document.getElementById('n-mname').value||'Default',tags:[]}]
     })});
-    toast('✓ 已添加: '+id);
-    ['n-id','n-name','n-url','n-key','n-mid','n-mname'].forEach(i=>document.getElementById(i).value='');
+    toast('✓ 已添加'); ['n-id','n-name','n-url','n-key','n-mid','n-mname'].forEach(i=>document.getElementById(i).value='');
     loadProviders();
   } catch(e) { toast('添加失败', true); }
 }
 
 async function delProvider(id) {
   if (!confirm('确定删除 '+id+'？')) return;
-  try { await api(`/api/providers/${encodeURIComponent(id)}`,{method:'DELETE'}); loadProviders(); toast('✓ 已删除'); }
-  catch(e) { toast('删除失败', true); }
+  try { await api(`/api/providers/${encodeURIComponent(id)}`,{method:'DELETE'}); loadProviders(); toast('✓ 已删除'); } catch(e) { toast('删除失败', true); }
 }
 
 // ── Init ──
-checkGateway(); loadProviders(); setInterval(checkGateway, 15000);
+checkSetup();
+loadProviders();
+startGwPoll();
 </script>
 </body>
 </html>
