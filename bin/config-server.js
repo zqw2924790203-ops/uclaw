@@ -93,23 +93,22 @@ async function testProvider(providerId) {
   if (!p) throw new Error(`Provider "${providerId}" not found`);
   if (!p.apiKey) return { ok: false, error: 'API Key 未配置', latencyMs: 0 };
 
+  const testModel = p.selectedModel || p.models?.[0]?.id || 'default';
   const start = Date.now();
   try {
     let testUrl, testBody, headers;
     if (p.api === 'anthropic-messages') {
       testUrl = p.baseUrl + '/v1/messages';
       headers = { 'Content-Type': 'application/json', 'x-api-key': p.apiKey, 'anthropic-version': '2023-06-01' };
-      testBody = JSON.stringify({ model: p.models[0]?.id || 'claude-3-haiku-20240307', max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] });
+      testBody = JSON.stringify({ model: testModel, max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] });
     } else if (p.api === 'openai-chatgpt-responses') {
-      // Codex can't easily test, just check endpoint reachability
       testUrl = p.baseUrl.replace('/v1', '') + '/';
       headers = {};
       testBody = null;
     } else {
-      // OpenAI-compatible
       testUrl = p.baseUrl + '/chat/completions';
       headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${p.apiKey}` };
-      testBody = JSON.stringify({ model: p.models[0]?.id || 'gpt-3.5-turbo', max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] });
+      testBody = JSON.stringify({ model: testModel, max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] });
     }
 
     const controller = new AbortController();
@@ -124,11 +123,11 @@ async function testProvider(providerId) {
     const data = await r.text();
 
     if (r.status === 200 || r.status === 201) {
-      return { ok: true, status: r.status, latencyMs: latency, message: '连接成功' };
+      return { ok: true, status: r.status, latencyMs: latency, message: `连接成功 (${testModel})`, model: testModel };
     } else if (r.status === 401 || r.status === 403) {
-      return { ok: false, status: r.status, latencyMs: latency, error: 'API Key 无效或已过期' };
+      return { ok: false, status: r.status, latencyMs: latency, error: 'API Key 无效或已过期', model: testModel };
     } else if (r.status === 429) {
-      return { ok: true, status: r.status, latencyMs: latency, message: '连接成功（触发限流，Key 有效）' };
+      return { ok: true, status: r.status, latencyMs: latency, message: `连接成功（触发限流，Key 有效）(${testModel})`, model: testModel };
     } else {
       // Check if response contains error about model
       const lower = data.toLowerCase();
