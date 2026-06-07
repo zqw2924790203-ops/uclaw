@@ -29,7 +29,8 @@
     ],
     "isCurrent": true,
     "costMultiplier": "1.0",
-    "notes": "默认推荐，免费快速"
+    "notes": "默认推荐，免费快速",
+    "selectedModel": "deepseek-v4-flash"
   },
   {
     "id": "minimax",

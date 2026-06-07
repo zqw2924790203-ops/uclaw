@@ -12,7 +12,7 @@ if not exist "%TMPDIR%" mkdir "%TMPDIR%"
 
 echo.
 echo   ================================
-echo    UClaW Gateway v1.0.0
+echo    UClaW Gateway v1.2.0
 echo   ================================
 echo.
 

@@ -115,7 +115,7 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "deepseek/deepseek-v4-pro",
+        "primary": "deepseek/deepseek-v4-flash",
         "fallbacks": []
       },
       "models": {
@@ -160,15 +160,7 @@
       "ask": "off"
     }
   },
-  "bindings": [
-    {
-      "agentId": "main",
-      "match": {
-        "channel": "openclaw-weixin",
-        "accountId": "0aec9dc831ba-im-bot"
-      }
-    }
-  ],
+  "bindings": [],
   "commands": {
     "native": "auto",
     "nativeSkills": "auto",
@@ -179,17 +171,7 @@
     "dmScope": "per-channel-peer",
     "idleMinutes": 10080
   },
-  "channels": {
-    "openclaw-weixin": {
-      "accounts": {
-        "0aec9dc831ba-im-bot": {
-          "enabled": true
-        }
-      },
-      "defaultAccount": "0aec9dc831ba-im-bot",
-      "enabled": true
-    }
-  },
+  "channels": {},
   "gateway": {
     "port": 18789,
     "mode": "local",
@@ -260,7 +242,6 @@
   "plugins": {
     "enabled": true,
     "allow": [
-      "openclaw-weixin",
       "alibaba",
       "anthropic",
       "arcee",
@@ -316,10 +297,6 @@
     ],
     "entries": {
       "minimax": {
-        "enabled": true,
-        "config": {}
-      },
-      "openclaw-weixin": {
         "enabled": true,
         "config": {}
       },

@@ -34,3 +34,12 @@ data/devices/
 Thumbs.db
 Desktop.ini
 .DS_Store
+data/.openclaw/
+data/plugin-skills/
+data/skill-workshop/
+data/usage.json
+data/openclaw.json.last-good
+data/workspace-attestations/
+data/update-check.json
+bin/gh.exe
+README.txt
