@@ -1,35 +1,39 @@
 # ⚡ UClaW — Portable OpenClaw Gateway
 
-便携版 OpenClaw AI 网关，放在 U 盘里随处运行。
+便携版 OpenClaw AI 网关，U 盘即插即用，无需安装。
 
 ## 快速开始
 
-### 方式一：下载 Release（推荐）
+### 下载 Release（推荐）
 
-1. 下载 [最新 Release](../../releases/latest) 的 `UClaW-v1.0.0.zip`
+1. 下载 [UClaW-v1.2.0.zip](https://github.com/zqw2924790203-ops/uclaw/releases/latest)
 2. 解压到 U 盘或任意目录
 3. 双击 `Launch-ModelSwitcher.bat`
+4. 浏览器自动打开控制面板，首次运行引导填入 API Key
 
-### 方式二：从源码构建
+### 从源码构建
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/uclaw.git
+git clone https://github.com/zqw2924790203-ops/uclaw.git
 cd uclaw
-setup.bat    # 自动下载 Node.js + 安装 OpenClaw
-Launch.bat   # 启动
+setup.bat          # 自动下载 Node.js + 安装 OpenClaw
+Launch-ModelSwitcher.bat  # 启动
 ```
 
-## 功能
+## 控制面板 (8 个页面)
 
-| 功能 | 说明 |
+| 页面 | 功能 |
 |------|------|
-| 🤖 模型切换 | 一键切换 6 个预配置提供商（CC Switch 风格） |
-| 🔑 API 配置 | Web UI 管理 API Key 和 Base URL |
-| ➕ 添加提供商 | 自定义添加任意 OpenAI/Anthropic 兼容 API |
-| 🌐 Gateway 监控 | 实时查看 Gateway 运行状态 |
-| 📦 完全便携 | 无需安装，U 盘即插即用 |
+| 🔄 模型切换 | 一键切换提供商，内联编辑 API Key，连接测试 |
+| 💬 测试对话 | SSE 流式输出，多轮对话测试模型效果 |
+| 🌐 Gateway | 启动/停止/重启，实时日志查看，配置回滚 |
+| 📊 用量统计 | 每个模型的调用次数和 Token 消耗 |
+| ➕ 添加提供商 | 添加自定义 OpenAI/Anthropic 兼容 API |
+| 🔌 插件管理 | 开关 OpenClaw 内置插件 |
+| 🤖 Agent 管理 | 配置 Agent 使用的模型 |
+| 💾 导入导出 | 配置备份、多设备同步 |
 
-## 预配置模型
+## 预配置模型提供商
 
 | 提供商 | 模型 | 分类 | 免费 |
 |--------|------|------|------|
@@ -40,53 +44,56 @@ Launch.bat   # 启动
 | Codex | GPT-5.4 / 5.4 Mini | 官方 | - |
 | Xiaomi MiMo | V2.5 Pro | 国内官方 | - |
 
+## 核心特性
+
+- 🔄 **模型切换自动重启** — 切换后 Gateway 自动重启，无需手动操作
+- 🛡️ **Gateway 守护进程** — 崩溃自动重启（15s 检测，最多重试 5 次）
+- ⏪ **配置回滚** — 修改前自动备份，出问题一键恢复
+- ⚡ **流式聊天** — SSE 逐字输出，实时查看模型回复
+- 📦 **完全便携** — 无需管理员权限，无需预装任何软件
+
 ## 项目结构
 
 ```
 UClaW/
-├── Launch.bat                 # 一键启动
-├── Launch-ModelSwitcher.bat   # 控制面板 + 模型切换
-├── setup.bat                  # 首次运行安装脚本
-├── Deploy.bat                 # 部署到 U 盘
-├── ModelSwitcher.html         # Web UI 控制面板
+├── Launch.bat                   # 一键启动 Gateway + 打开 Web UI
+├── Launch-ModelSwitcher.bat     # 控制面板（Gateway + Config Server）
+├── setup.bat                    # 首次运行：下载 Node.js + 安装 OpenClaw
+├── ModelSwitcher.html           # Web UI 控制面板（单文件）
 ├── bin/
-│   ├── config-server.js       # 配置管理服务器
-│   ├── node/                  # [gitignore] Node.js v24.14.1
-│   └── openclaw/              # [gitignore] OpenClaw v2026.6.1
+│   ├── config-server.js         # 配置管理服务器（Gateway 生命周期管理）
+│   ├── node/                    # Node.js v24.14.1 便携运行时
+│   └── openclaw/                # OpenClaw v2026.6.1 包
 ├── data/
-│   ├── openclaw.json          # OpenClaw 主配置
-│   ├── providers.json         # 提供商数据库
-│   ├── agents/                # Agent 配置
-│   ├── skills/                # 技能
-│   └── extensions/            # 插件
-└── models/
-    ├── current.json           # 当前激活模型
-    └── profiles/              # 模型预设配置
+│   ├── openclaw.json            # OpenClaw 主配置
+│   ├── providers.json           # 提供商数据库
+│   ├── agents/                  # Agent 配置
+│   ├── skills/                  # 技能
+│   ├── extensions/              # 插件
+│   └── usage.json               # 用量统计
+├── models/
+│   └── profiles/                # 模型预设
+└── .github/workflows/           # CI/CD 自动构建
 ```
 
 ## 架构
 
 ```
 Launch-ModelSwitcher.bat
-  ├─ Gateway (port 18789)      ← OpenClaw AI 网关
-  └─ Config Server (port 18790) ← 提供商管理 API + Web UI
-       └─ 浏览器自动打开控制面板
+  └─ Config Server (port 18790)
+       ├─ Gateway 进程管理 (port 18789)
+       ├─ 提供商数据库 API
+       ├─ 聊天代理 API
+       ├─ 用量统计 API
+       └─ 配置导入导出 API
 ```
-
-**模型切换流程：**
-1. 用户在 Web UI 点击切换
-2. Config Server 更新 `providers.json` 的 `isCurrent` 标志
-3. 写入 `openclaw.json` 的 `models.providers` + `agents.defaults.model.primary`
-4. 同步 API Key 到所有 Agent 配置
-5. 重启 Gateway 生效
 
 ## 环境要求
 
 - Windows 10/11 x64
+- 网络连接（调用 AI API）
 - 无需管理员权限
-- 无需预装任何软件
-- 需要网络连接（调用 AI API）
 
-## 许可证
+## License
 
-MIT License
+MIT
