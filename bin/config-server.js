@@ -3,6 +3,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
+const crypto = require('crypto');
 
 const ROOT = process.env.UCRAW_ROOT || path.resolve(__dirname, '..');
 const DATA_DIR = process.env.OPENCLAW_STATE_DIR || path.join(ROOT, 'data');
@@ -12,26 +13,32 @@ const PORT = parseInt(process.env.UCLAW_CONFIG_PORT || '18790', 10);
 const GATEWAY_PORT = parseInt(process.env.OPENCLAW_GATEWAY_PORT || '18789', 10);
 const NODE_EXE = path.join(ROOT, 'bin', 'node', 'node.exe');
 const OPENCLAW_ENTRY = path.join(ROOT, 'bin', 'openclaw', 'node_modules', 'openclaw', 'dist', 'index.js');
+const AUTH_TOKEN = crypto.randomBytes(32).toString('hex');
+const MAX_BODY_SIZE = 1024 * 1024; // 1MB
 
 const readJSON = p => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
 const writeJSON = (p, d) => fs.writeFileSync(p, JSON.stringify(d, null, 2), 'utf8');
 const maskKey = k => (!k || k.length < 10) ? '***' : k.slice(0, 6) + '...' + k.slice(-4);
 const log = msg => console.log(`[${new Date().toLocaleTimeString()}] ${msg}`);
 
-function cors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
 function json(res, data, status = 200) {
-  cors(res); res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(data));
 }
 function err(res, msg, status = 400) { json(res, { error: msg }, status); }
 async function body(req) {
   return new Promise(resolve => {
-    let d = ''; req.on('data', c => d += c);
-    req.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve({}); } });
+    let d = ''; let size = 0; let overflow = false;
+    req.on('data', c => {
+      if (overflow) return;
+      size += Buffer.byteLength(c);
+      if (size > MAX_BODY_SIZE) { overflow = true; resolve({}); return; }
+      d += c;
+    });
+    req.on('end', () => {
+      if (overflow) return;
+      try { resolve(JSON.parse(d)); } catch { resolve({}); }
+    });
   });
 }
 
@@ -87,13 +94,27 @@ function startGateway() {
     log('Gateway error: ' + e.message);
   });
 
-  // Mark as running after 8s if not already
-  setTimeout(() => {
-    if (gatewayStatus === 'starting') {
-      gatewayStatus = 'running';
-      gatewayStartedAt = new Date();
+  // Poll health endpoint to confirm readiness (up to 30s)
+  const confirmReady = async () => {
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 1000));
+      if (gatewayStatus !== 'starting') return;
+      try {
+        const r = await fetch(`http://localhost:${GATEWAY_PORT}/health`, { signal: AbortSignal.timeout(2000) });
+        if (r.ok) {
+          gatewayStatus = 'running';
+          gatewayStartedAt = new Date();
+          log('Gateway ready on port ' + GATEWAY_PORT);
+          return;
+        }
+      } catch {}
     }
-  }, 8000);
+    if (gatewayStatus === 'starting') {
+      gatewayStatus = 'error';
+      log('Gateway failed to start within 30s');
+    }
+  };
+  confirmReady();
 
   return { ok: true, status: 'starting' };
 }
@@ -107,8 +128,8 @@ function stopGateway() {
   try {
     // On Windows, use taskkill to kill the entire process tree
     if (process.platform === 'win32' && pid) {
-      const { execSync } = require('child_process');
-      try { execSync(`taskkill /PID ${pid} /T /F`, { stdio: 'ignore' }); } catch {}
+      const { exec } = require('child_process');
+      exec(`taskkill /PID ${pid} /T /F`, (err) => { if (err) log('taskkill error: ' + err.message); });
     } else {
       gatewayProc.kill('SIGTERM');
       setTimeout(() => { try { gatewayProc?.kill('SIGKILL'); } catch {} }, 3000);
@@ -146,9 +167,24 @@ function getGatewayInfo() {
   };
 }
 
-// ── Provider DB ──
-function getProviderDB() { return readJSON(PROVIDERS_DB) || []; }
-function writeProviderDB(db) { writeJSON(PROVIDERS_DB, db); }
+// ── Provider DB (mtime-based cache) ──
+let _providerCache = null;
+let _providerMtime = 0;
+function getProviderDB() {
+  try {
+    const stat = fs.statSync(PROVIDERS_DB);
+    if (!_providerCache || stat.mtimeMs !== _providerMtime) {
+      _providerCache = readJSON(PROVIDERS_DB) || [];
+      _providerMtime = stat.mtimeMs;
+    }
+  } catch { if (!_providerCache) _providerCache = []; }
+  return _providerCache;
+}
+function writeProviderDB(db) {
+  writeJSON(PROVIDERS_DB, db);
+  _providerCache = db;
+  try { _providerMtime = fs.statSync(PROVIDERS_DB).mtimeMs; } catch { _providerMtime = Date.now(); }
+}
 
 function switchProvider(providerId, modelId) {
   const db = getProviderDB();
@@ -313,8 +349,8 @@ function recordUsage(providerId, model, tokens, latencyMs, ok) {
   writeJSON(USAGE_DB, usage);
 }
 
-// ── Chat Proxy ──
-async function chatProxy(providerId, message, history) {
+// ── Chat Request Builder (shared by chatProxy & chatStream) ──
+function buildChatRequest(providerId, message, history, { stream = false } = {}) {
   const db = getProviderDB();
   const p = db.find(x => x.id === providerId);
   if (!p) throw new Error(`Provider "${providerId}" not found`);
@@ -322,18 +358,24 @@ async function chatProxy(providerId, message, history) {
 
   const model = p.selectedModel || p.models?.[0]?.id || 'default';
   const messages = [...(history || []), { role: 'user', content: message }];
-  const start = Date.now();
 
   let headers, url, body;
   if (p.api === 'anthropic-messages') {
     url = p.baseUrl + '/v1/messages';
     headers = { 'Content-Type': 'application/json', 'x-api-key': p.apiKey, 'anthropic-version': '2023-06-01' };
-    body = JSON.stringify({ model, max_tokens: 1024, messages });
+    body = JSON.stringify({ model, max_tokens: 1024, stream, messages });
   } else {
     url = p.baseUrl + '/chat/completions';
     headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${p.apiKey}` };
-    body = JSON.stringify({ model, max_tokens: 1024, messages });
+    body = JSON.stringify({ model, max_tokens: 1024, stream, messages });
   }
+  return { provider: p, model, messages, headers, url, body };
+}
+
+// ── Chat Proxy ──
+async function chatProxy(providerId, message, history) {
+  const { provider: p, model, headers, url, body } = buildChatRequest(providerId, message, history);
+  const start = Date.now();
 
   try {
     const controller = new AbortController();
@@ -373,7 +415,7 @@ function exportConfig() {
   };
 }
 function importConfig(data) {
-  if (data.providers) writeJSON(PROVIDERS_DB, data.providers);
+  if (data.providers) writeProviderDB(data.providers);
   if (data.config) writeJSON(CONFIG_PATH, data.config);
   if (data.usage) writeJSON(USAGE_DB, data.usage);
 }
@@ -438,31 +480,13 @@ function rollbackConfig() {
 
 // ── Streaming Chat (SSE) ──
 async function chatStream(providerId, message, history, res) {
-  const db = getProviderDB();
-  const p = db.find(x => x.id === providerId);
-  if (!p) throw new Error(`Provider "${providerId}" not found`);
-  if (!p.apiKey) throw new Error('API Key 未配置');
-
-  const model = p.selectedModel || p.models?.[0]?.id || 'default';
-  const messages = [...(history || []), { role: 'user', content: message }];
+  const { provider: p, model, headers, url, body } = buildChatRequest(providerId, message, history, { stream: true });
   const start = Date.now();
-
-  let headers, url, body;
-  if (p.api === 'anthropic-messages') {
-    url = p.baseUrl + '/v1/messages';
-    headers = { 'Content-Type': 'application/json', 'x-api-key': p.apiKey, 'anthropic-version': '2023-06-01' };
-    body = JSON.stringify({ model, max_tokens: 1024, stream: true, messages });
-  } else {
-    url = p.baseUrl + '/chat/completions';
-    headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${p.apiKey}` };
-    body = JSON.stringify({ model, max_tokens: 1024, stream: true, messages });
-  }
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive',
-    'Access-Control-Allow-Origin': '*'
   });
   res.write(`data: ${JSON.stringify({ type: 'model', model })}\n\n`);
 
@@ -569,13 +593,42 @@ function togglePlugin(pluginId, enabled) {
 
 // ── HTTP Server ──
 const server = http.createServer(async (req, res) => {
-  if (req.method === 'OPTIONS') { cors(res); res.writeHead(204); return res.end(); }
+  // CORS - only allow localhost origins
+  const origin = req.headers.origin;
+  if (origin) {
+    try {
+      const u = new URL(origin);
+      if (['127.0.0.1', 'localhost', '::1', '[::1]'].includes(u.hostname)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      }
+    } catch {}
+  } else {
+    // No origin = same-origin or non-browser client (curl etc.)
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+
+  if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+
+  // Reject oversized request bodies early
+  const cl = parseInt(req.headers['content-length'] || '0', 10);
+  if (cl > MAX_BODY_SIZE) return err(res, 'Payload too large', 413);
+
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const p = url.pathname;
 
+  // Auth check for API routes (skip HTML serving)
+  if (p !== '/' && p !== '/index.html') {
+    if (req.headers.authorization !== `Bearer ${AUTH_TOKEN}`)
+      return err(res, 'Unauthorized', 401);
+  }
+
   if (p === '/' || p === '/index.html') {
-    cors(res); res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    return res.end(fs.readFileSync(path.join(ROOT, 'ModelSwitcher.html'), 'utf8'));
+    let html = fs.readFileSync(path.join(ROOT, 'ModelSwitcher.html'), 'utf8');
+    html = html.replace('__AUTH_TOKEN__', AUTH_TOKEN);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    return res.end(html);
   }
 
   // ── Gateway Management ──
@@ -618,7 +671,7 @@ const server = http.createServer(async (req, res) => {
       if (gatewayProc && !gatewayProc.killed) {
         log('Auto-restarting gateway after model switch...');
         result.restart = 'initiated';
-        restartGateway(); // async, don't await
+      restartGateway().catch(e => log('Auto-restart failed: ' + e.message));
       }
       return json(res, result);
     } catch (e) { return err(res, e.message); }
@@ -781,6 +834,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, '127.0.0.1', () => {
   log(`Config Panel: http://localhost:${PORT}`);
+  log(`Auth token: ${AUTH_TOKEN.slice(0, 8)}... (required for API access)`);
   log(`Data: ${DATA_DIR}`);
   startWatchdog();
   // Auto-start gateway

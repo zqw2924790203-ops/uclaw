@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="uclaw-token" content="__AUTH_TOKEN__">
 <title>UClaW — 控制面板</title>
 <style>
   :root{--bg:#0a0a0a;--surface:#141414;--card:#1a1a1a;--card-hover:#222;--border:#2a2a2a;
@@ -200,7 +201,7 @@
       <div class="nav-item" data-page="agents">🤖 Agent 管理</div>
       <div class="nav-item" data-page="sync">💾 导入导出</div>
     </nav>
-    <div class="version">OpenClaw v2026.6.1 · v1.0.0</div>
+<div class="version">OpenClaw v2026.6.1 · v1.2.0</div>
   </aside>
 
   <div class="main">
@@ -333,8 +334,10 @@ document.querySelectorAll('.nav-item').forEach(el => el.onclick = () => {
   if (pg === 'agents') loadAgents();
 });
 
+const AUTH_TOKEN = document.querySelector('meta[name="uclaw-token"]')?.content || '';
 async function api(path, opts = {}) {
-  const r = await fetch(API + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + AUTH_TOKEN, ...(opts.headers || {}) };
+  const r = await fetch(API + path, { ...opts, headers });
   return r.json();
 }
 
@@ -647,7 +650,7 @@ function renderMarkdown(text) {
   html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
   // Unordered list items
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+  html = html.replace(/((?:<li>.*<\/li>\s*)+)/g, '<ul>$1</ul>');
   // Paragraphs (double newline)
   html = html.replace(/\n\n/g, '</p><p>');
   // Single newlines (outside pre)
@@ -686,7 +689,7 @@ async function sendChatStream() {
   try {
     const response = await fetch(API + '/api/chat/stream', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + AUTH_TOKEN },
       body: JSON.stringify({ message: msg, history: chatHistory }),
       signal: chatAbortController.signal
     });
