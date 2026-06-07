@@ -24,11 +24,31 @@ if not exist "%OPENCLAW_ENTRY%" (echo  [ERROR] OpenClaw not found & pause & exit
 
 echo  Starting Gateway on port 18789...
 echo  URL: http://localhost:18789
-echo  Press Ctrl+C to stop.
-echo  ================================
 echo.
 
-node "%OPENCLAW_ENTRY%" gateway --port 18789
+rem === Start gateway in background ===
+start "UClaW Gateway" /min node "%OPENCLAW_ENTRY%" gateway --port 18789
+
+echo  Waiting for Gateway to start...
+set "RETRY=0"
+:wait_loop
+timeout /t 2 /nobreak >nul
+set /a RETRY+=1
+if %RETRY% gtr 15 goto :open_browser
+node -e "fetch('http://localhost:18789/health').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))" >nul 2>&1
+if errorlevel 1 goto :wait_loop
+
+:open_browser
+echo  Gateway is ready! Opening Web UI...
+start "" "http://localhost:18789/"
 echo.
+echo  ========================================
+echo   Gateway running. Web UI opened.
+echo   Press any key to STOP the Gateway.
+echo  ========================================
+pause >nul
+
+echo  Stopping...
+taskkill /FI "WINDOWTITLE eq UClaW Gateway" /F >nul 2>&1
 echo  Gateway stopped.
 pause
