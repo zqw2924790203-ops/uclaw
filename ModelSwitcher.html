@@ -113,10 +113,8 @@
   .log-filter-bar input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.35rem .55rem;font-size:.78rem;outline:none;font-family:inherit}
   .log-filter-bar input:focus{border-color:var(--accent)}
 
-  /* Setup wizard */
-  .setup-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center}
-  .setup-overlay.hidden{display:none}
-  .setup-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:500px;max-width:92vw}
+  /* Setup wizard (inline page, no modal) */
+  .setup-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;max-width:520px;margin:3rem auto}
   .setup-card h2{font-size:1.2rem;margin-bottom:.3rem}
   .setup-card .subtitle{color:var(--dim);font-size:.85rem;margin-bottom:1.5rem}
   .setup-card .step{margin-bottom:1.25rem}
@@ -168,8 +166,8 @@
 </head>
 <body>
 
-<!-- Setup Wizard (shown on first run) -->
-<div class="setup-overlay hidden" id="setupWizard">
+<!-- Setup page (shown inline as first tab on first run) -->
+<div id="page-setup" class="page active" style="display:none">
   <div class="setup-card">
     <h2>⚡ 欢迎使用 UClaW</h2>
     <p class="subtitle">便携版 OpenClaw Gateway — 首次配置</p>
@@ -368,7 +366,11 @@ async function checkSetup() {
   try {
     const s = await api('/api/setup/status');
     if (s.needsSetup) {
-      document.getElementById('setupWizard').classList.remove('hidden');
+      // Show setup as inline page, hide normal pages
+      document.querySelectorAll('.page:not(#page-setup)').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-setup').classList.add('active');
+      document.getElementById('page-setup').style.display = 'block';
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     }
   } catch {}
 }
@@ -379,8 +381,12 @@ async function doSetup() {
     await api('/api/setup/init', { method: 'POST', body: JSON.stringify({ apiKey: key }) });
     const model = document.getElementById('setup-model').value;
     await api('/api/providers/deepseek/switch', { method: 'PUT', body: JSON.stringify({ modelId: model }) });
-    document.getElementById('setupWizard').classList.add('hidden');
-    toast('配置完成，正在启动 Gateway...');
+    document.getElementById('page-setup').style.display = 'none';
+    document.getElementById('page-setup').classList.remove('active');
+    // Show model switch page
+    document.getElementById('page-switch').classList.add('active');
+    document.querySelector('[data-page=switch]').classList.add('active');
+    toast('✓ 配置完成，正在启动 Gateway...');
     await api('/api/gateway/start', { method: 'POST' });
     loadProviders();
     startGwPoll();
